@@ -146,6 +146,25 @@ h2{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
 .lk:hover b{text-decoration:underline;text-underline-offset:.2em}
 .addrow{display:flex;gap:.5rem;padding:.625rem 0 0}
 .addrow input{flex:1;min-width:0}
+.tcal{margin-bottom:2.25rem}
+.tcal .cal-h{margin-bottom:.75rem}
+.tcal .cal-h h2{font-size:1.25rem}
+.tcal .big td{height:5.5rem}
+.tcal .big td button{min-height:5.5rem}
+.day-h{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.day-h h2{font-size:1.25rem}
+.two.day{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.sec-h .seg button{height:1.875rem;padding:0 .625rem}
+.sec-h .seg i{font-style:normal;font-weight:600;margin-left:.25rem;opacity:.75}
+.sec-h:has(.seg){padding-bottom:.375rem}
+.tadd{display:grid;gap:.5rem;padding:.75rem 0 0}
+.tadd-r{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.tadd-r label{font-size:.875rem;font-weight:700;color:var(--ink-2)}
+.tadd-r input[type=date]{flex:1;width:auto;min-width:8.25rem;max-width:11rem;padding:0 .5rem}
+.tadd-r .btn-o{margin-left:auto}
+.side-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding-bottom:.375rem;border-bottom:2px solid var(--ink)}
+.side-top .side-h{margin:0}
+.side-top .n{font-size:.875rem;font-weight:700;color:var(--ink-2);margin-left:.375rem}
 
 .side-h{font-size:1.125rem;font-weight:800;margin-bottom:.25rem}
 .sub-h{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding-bottom:.375rem;border-bottom:2px solid var(--ink);margin-top:1.5rem}
@@ -223,10 +242,10 @@ h3{font-size:.9375rem;font-weight:800}
 
 .f{display:grid;gap:.875rem}
 .f label,.f .lab,.editor label,.editor .lab{display:block;font-size:.875rem;font-weight:700;margin-bottom:.3125rem}
-.f input:not([type=checkbox]),.f select,.f textarea,.editor input,.editor select,.tool input,.addrow input,.set input,.set select{width:100%;height:2.5rem;padding:0 .75rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;transition:border-color .16s}
+.f input:not([type=checkbox]),.f select,.f textarea,.editor input,.editor select,.tool input,.addrow input,.tadd input,.set input,.set select{width:100%;height:2.5rem;padding:0 .75rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;transition:border-color .16s}
 .f textarea{height:6.5rem;padding:.625rem .75rem;resize:vertical;line-height:1.5}
-.f ::placeholder,.tool ::placeholder,.addrow ::placeholder,.set ::placeholder{color:var(--ink-3)}
-.f input:hover,.f select:hover,.f textarea:hover,.tool input:hover,.addrow input:hover,.editor input:hover,.editor select:hover{border-color:var(--ink-3)}
+.f ::placeholder,.tool ::placeholder,.addrow ::placeholder,.tadd ::placeholder,.set ::placeholder{color:var(--ink-3)}
+.f input:hover,.f select:hover,.f textarea:hover,.tool input:hover,.addrow input:hover,.tadd input:hover,.editor input:hover,.editor select:hover{border-color:var(--ink-3)}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 .err{color:var(--red);font-size:.875rem;font-weight:600;margin-top:.3125rem}
 .help{font-size:.875rem;font-weight:500;color:var(--ink-2);margin-top:.4375rem}
@@ -397,8 +416,10 @@ input,textarea{caret-color:var(--go)}
   .toast{bottom:calc(4.25rem + env(safe-area-inset-bottom))}
   .page{padding:1.5rem 1rem 2.5rem}
   h1{font-size:1.4375rem}
-  .two{grid-template-columns:minmax(0,1fr);gap:2.25rem}
+  .two,.two.day{grid-template-columns:minmax(0,1fr);gap:2.25rem}
   .stack{gap:2.25rem}
+  .tcal .big td,.tcal .big td button{height:3.5rem;min-height:3.5rem}
+  .tcal{margin-bottom:1.75rem}
   .side{padding:1.25rem 1rem}
   .big td,.big td button{height:3.5rem;min-height:3.5rem}
   .big td button{align-items:center;padding:.25rem 0;text-align:center}
@@ -644,11 +665,15 @@ function flush(){
 const evBlank=d=>({id:null,n:'',d,timed:true,t:'09:00',e:'',c:'',r:''});
 const rtBlank=()=>({id:null,n:'',timed:false,t:'07:00',w:[1,1,1,1,1,1,1],mode:'days',k:3});
 const T0=today();
-const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
+const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tg:'all',ta:{n:'',due:'',g:'w'},tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
 
 const cat=id=>S.cats.find(c=>c.id===id);
 const kc=id=>{const c=cat(id);return c?'k-'+c.col:'k-none'};
 const tag=id=>{const c=cat(id);return c?`<span class="tag k-${c.col}">${esc(c.n)}</span>`:''};
+/* 할 일은 업무(w)와 개인(p)으로만 나눈다. 구분이 없는 예전 할 일은 분류가 집·공부면 개인, 나머지는 업무로 본다. */
+const GN={w:'업무',p:'개인'};
+const tg=t=>t.g==='w'||t.g==='p'?t.g:(t.c==='home'||t.c==='study'?'p':'w');
+const gtag=t=>`<span>${GN[tg(t)]}</span>`;
 const catOpts=(v,none)=>`<option value="">${none}</option>`+S.cats.map(c=>`<option value="${c.id}"${c.id===v?' selected':''}>${esc(c.n)}</option>`).join('');
 const evOn=d=>S.ev.filter(e=>e.d===d||(e.r==='w'&&e.d<d&&dow(e.d)===dow(d))).sort((a,b)=>(a.t||'')<(b.t||'')?-1:(a.t||'')>(b.t||'')?1:0);
 /* 루틴 일정은 두 가지: 요일 정하기(w), 주 몇 회(k). sch에 바꾼 날짜별로 남겨서 지난 기록이 바뀌지 않게 한다. */
@@ -775,7 +800,7 @@ function evRows(d,edit){
 }
 function tdDue(d){return S.td.filter(t=>t.due===d&&(!t.done||t.done>=d))}
 function agenda(d){
-  const ev=evRows(d,true),td=tdDue(d).map(t=>`<li class="row${t.done?' done':''}"><span class="tm ck"><input type="checkbox" id="ag${t.id}" data-a="td-toggle" data-id="${t.id}"${t.done?' checked':''}></span><label class="t" for="ag${t.id}"><b>${esc(t.n)}</b><span class="m"><span>할 일</span>${tag(t.c)}</span></label></li>`).join('');
+  const ev=evRows(d,true),td=tdDue(d).map(t=>`<li class="row${t.done?' done':''}"><span class="tm ck"><input type="checkbox" id="ag${t.id}" data-a="td-toggle" data-id="${t.id}"${t.done?' checked':''}></span><label class="t" for="ag${t.id}"><b>${esc(t.n)}</b><span class="m"><span>할 일</span>${gtag(t)}</span></label></li>`).join('');
   return ev+td||'<li class="empty">이 날은 비어 있습니다.</li>';
 }
 function upcoming(){
@@ -783,11 +808,11 @@ function upcoming(){
   for(let i=1;i<=14&&out.length<6;i++){
     const d=add(T,i),lab=`${WD[dow(d)]} ${pd(d).getDate()}일`;
     evOn(d).forEach(e=>{if(out.length<6)out.push(`<li class="row"><span class="tm wide">${lab}</span><div class="t"><b>${esc(e.n)}</b><span class="m"><span>${e.t||'종일'}</span>${tag(e.c)}</span></div></li>`)});
-    S.td.filter(t=>t.due===d&&!t.done).forEach(t=>{if(out.length<6)out.push(`<li class="row"><span class="tm wide">${lab}</span><div class="t"><b>${esc(t.n)}</b><span class="m"><span>할 일 기한</span>${tag(t.c)}</span></div></li>`)});
+    S.td.filter(t=>t.due===d&&!t.done).forEach(t=>{if(out.length<6)out.push(`<li class="row"><span class="tm wide">${lab}</span><div class="t"><b>${esc(t.n)}</b><span class="m"><span>할 일 기한</span>${gtag(t)}</span></div></li>`)});
   }
   return out.join('')||'<li class="empty">앞으로 2주 동안 잡힌 것이 없습니다.</li>';
 }
-function grid(ym,big){
+function grid(ym,big,lim){
   const a=ym.split('-').map(Number),first=new Date(a[0],a[1]-1,1).getDay(),days=new Date(a[0],a[1],0).getDate(),T=today();
   let h='',n=1-first;
   while(n<=days){
@@ -801,7 +826,8 @@ function grid(ym,big){
       if(marks.length)s+=`<span class="dots">${marks.slice(0,4).join('')}</span>`;
       if(big){
         const ch=ev.map(e=>`<em class="${kc(e.c)}">${esc(e.n)}</em>`).concat(td.map(t=>`<em class="tk">${esc(t.n)}</em>`));
-        if(ch.length)s+=`<span class="evs">${(ch.length>3?ch.slice(0,2):ch).join('')}${ch.length>3?`<u>외 ${ch.length-2}건</u>`:''}</span>`;
+        const L=lim||3;
+        if(ch.length)s+=`<span class="evs">${(ch.length>L?ch.slice(0,L-1):ch).join('')}${ch.length>L?`<u>외 ${ch.length-L+1}건</u>`:''}</span>`;
       }
       h+=`<td class="${cls}"><button type="button" data-a="day" data-d="${d}" aria-pressed="${d===U.sel}" aria-label="${md(d)}${ho?' '+ho:''}${ev.length?`, 일정 ${ev.length}건`:''}${td.length?`, 할 일 ${td.length}건`:''}">${s}</button></td>`;
     }
@@ -843,14 +869,14 @@ function rtCount(){
 }
 function tdRow(t){
   const T=today();
-  if(U.tdEdit===t.id)return `<li class="row ed"><form class="editor" data-f="td-save" data-id="${t.id}" novalidate><div><label for="te-n">할 일</label><input id="te-n" name="n" type="text" value="${esc(t.n)}"></div><div class="f2"><div><label for="te-d">기한 (선택)</label><input id="te-d" name="due" type="date" value="${t.due||''}"></div><div><label for="te-c">분류</label><select id="te-c" name="c">${catOpts(t.c,'분류 없음')}</select></div></div><div class="btns"><button class="btn-p" type="submit">저장</button><button class="btn-o" type="button" data-a="td-cancel">취소</button><button class="btn-d" type="button" data-a="td-del" data-id="${t.id}">지우기</button></div></form></li>`;
+  if(U.tdEdit===t.id)return `<li class="row ed"><form class="editor" data-f="td-save" data-id="${t.id}" novalidate><div><label for="te-n">할 일</label><input id="te-n" name="n" type="text" value="${esc(t.n)}"></div><div class="f2"><div><label for="te-d">기한 (선택)</label><input id="te-d" name="due" type="date" value="${t.due||''}"></div><div><label for="te-g">구분</label><select id="te-g" name="g"><option value="w"${tg(t)==='w'?' selected':''}>업무</option><option value="p"${tg(t)==='p'?' selected':''}>개인</option></select></div></div><div class="btns"><button class="btn-p" type="submit">저장</button><button class="btn-o" type="button" data-a="td-cancel">취소</button><button class="btn-d" type="button" data-a="td-del" data-id="${t.id}">지우기</button></div></form></li>`;
   const late=!t.done&&t.due&&t.due<T;
   let due='';
   if(t.done)due='<span>끝냄</span>';
   else if(late)due=`<span class="late">${diff(T,t.due)}일 지남</span>`;
   else if(t.due===T)due='<span>오늘까지</span>';
   else if(t.due)due=`<span>${md(t.due)}(${WD[dow(t.due)]})까지</span>`;
-  const m=due+tag(t.c);
+  const m=due+(U.tg==='all'?gtag(t):'');
   return `<li class="row${t.done?' done':''}"><input type="checkbox" id="td${t.id}" data-a="td-toggle" data-id="${t.id}"${t.done?' checked':''}><label class="t" for="td${t.id}"><b>${esc(t.n)}</b>${m?`<span class="m">${m}</span>`:''}</label>${late?`<button class="act" type="button" data-a="td-today" data-id="${t.id}">오늘로</button>`:''}<button class="icx" type="button" data-a="td-edit" data-id="${t.id}" aria-label="${esc(t.n)} 고치기">${ico('note','')}</button></li>`;
 }
 function tdSorted(){
@@ -874,39 +900,42 @@ V.today=()=>{
   else if(next)a=`오늘 일정은 <a href="#s-ev">${ev.length}건</a>이고, 다음은 <b>${t12(next.t)} ${esc(next.n)}</b>입니다.`;
   else if(timed.length)a=`오늘 일정 <a href="#s-ev">${ev.length}건</a>은 모두 끝났습니다.`;
   else a=`오늘 일정은 <a href="#s-ev">${ev.length}건</a>입니다.`;
-  const late=S.td.filter(t=>!t.done&&t.due&&t.due<T).length,inb=inbox().length;
-  let b;
-  if(late&&inb)b=`기한이 지난 일 <a class="late" href="#s-td">${late}건</a>과 정리할 자료 <a href="#box">${inb}건</a>이 있습니다.`;
-  else if(late)b=`기한이 지난 일이 <a class="late" href="#s-td">${late}건</a> 있습니다.`;
-  else if(inb)b=`정리할 자료가 <a href="#box">${inb}건</a> 있습니다.`;
-  else b='밀린 일과 정리할 자료는 없습니다.';
+  const late=S.td.filter(t=>!t.done&&t.due&&t.due<T).length;
+  const b=late?`기한이 지난 일이 <a class="late" href="#s-td">${late}건</a> 있습니다.`:'밀린 일은 없습니다.';
   const none=!S.ev.length&&!S.td.length&&!S.rt.length&&!S.it.length;
-  const rc=rtCount(),tds=tdSorted(),open=tds.filter(t=>!t.done).length;
-  const tNow=tds.filter(t=>!t.done&&(!t.due||t.due<=T)),tLater=tds.filter(t=>!t.done&&t.due>T),tDone=tds.filter(t=>t.done);
-  const tdHtml=tNow.map(tdRow).join('')+(tLater.length?`<li class="grp">기한이 남은 일</li>`+tLater.map(tdRow).join(''):'')+(tDone.length?`<li class="grp">오늘 끝낸 일</li>`+tDone.map(tdRow).join(''):'');
   const first=none?`<div class="first"><h2>아직 넣은 것이 없습니다</h2><p>맨 위 입력창에 한 줄 적으면 일정, 할 일, 루틴, 자료로 알아서 나눠 담습니다. 어떤 모습인지 먼저 보고 싶으면 예시를 넣어 둘러보세요.</p><button class="btn-p" type="button" data-a="demo-add">예시로 둘러보기</button></div>`:'';
-  let side,head;
-  if(U.sel===T){head='<h3>앞으로 2주</h3><a class="more" href="#cal">달력 열기</a>';side=upcoming()}
-  else{head=`<h3>${mdw(U.sel)}</h3><button class="more" type="button" data-a="cal-today">오늘 보기</button>`;side=agenda(U.sel)}
+  /* 달력에서 고른 날(처음에는 오늘)의 일정과 할 일을 보여 준다. */
+  const sel=U.sel,isT=sel===T,rc=rtCount(),inG=t=>U.tg==='all'||tg(t)===U.tg;
+  const pool=isT?tdSorted():S.td.filter(t=>t.due===sel).sort((x,y)=>(x.done?1:0)-(y.done?1:0));
+  const cnt=g=>pool.filter(t=>!t.done&&(g==='all'||tg(t)===g)).length;
+  const tds=pool.filter(inG);
+  let tdHtml;
+  if(isT){
+    const tNow=tds.filter(t=>!t.done&&(!t.due||t.due<=T)),tLater=tds.filter(t=>!t.done&&t.due>T),tDone=tds.filter(t=>t.done);
+    tdHtml=tNow.map(tdRow).join('')+(tLater.length?`<li class="grp">기한이 남은 일</li>`+tLater.map(tdRow).join(''):'')+(tDone.length?`<li class="grp">오늘 끝낸 일</li>`+tDone.map(tdRow).join(''):'');
+  }else tdHtml=tds.map(tdRow).join('');
+  const tdNone=U.tg!=='all'&&pool.length?`${GN[U.tg]} 할 일이 없습니다.`:isT?'할 일이 없습니다. 아래 칸에 적고 Enter를 누르면 들어갑니다.':'이 날이 기한인 할 일이 없습니다. 아래에서 추가하면 이 날짜가 기한으로 들어갑니다.';
+  const seg=[['all','전체'],['w','업무'],['p','개인']].map(o=>`<button type="button" data-a="tg" data-v="${o[0]}" aria-pressed="${U.tg===o[0]}">${o[1]}<i>${cnt(o[0])}</i></button>`).join('');
+  if(U.ta.sel!==sel){U.ta.sel=sel;U.ta.due=isT?'':sel}
   return `<div class="main">
     <header class="vh"><div class="vh-r"><h1>${mdw(T)}</h1></div><p class="say"><span>${a}</span> <span>${b}</span></p></header>
     ${first}
-    <div class="two">
-      <div class="stack">
-        <section class="sec" id="s-ev"><div class="sec-h"><h2>일정</h2><span class="n">${ev.length?ev.length+'건':''}</span></div><ul>${evRows(T,true)||'<li class="empty">오늘은 일정이 없습니다. 위 입력창에 "3시 회의"처럼 적으면 들어갑니다.</li>'}</ul></section>
-        <section class="sec" id="s-rt"><div class="sec-h"><h2>루틴</h2><span class="n">${rc.due?rc.done+'/'+rc.due:''}</span></div><ul>${rtRows()}</ul></section>
-      </div>
-      <div class="stack">
-        <section class="sec" id="s-td"><div class="sec-h"><h2>할 일</h2><span class="n${late?' late':''}">${late?`밀린 것 ${late}건`:open?`${open}건`:''}</span></div><ul>${tdHtml||'<li class="empty">할 일이 없습니다. 아래 칸에 적고 Enter를 누르면 들어갑니다.</li>'}</ul>
-          <form class="addrow" data-f="td-add" novalidate><label class="sr" for="td-add">할 일 추가</label><input id="td-add" type="text" placeholder="할 일 추가" autocomplete="off"><button class="btn-o" type="submit">추가</button></form></section>
-        <section class="sec" id="s-in"><div class="sec-h"><h2>정리 대기</h2><span class="n">${inb?inb+'건':''}</span></div><ul>${inRows()}</ul></section>
-      </div>
+    <section class="tcal" aria-label="달력">
+      <div class="cal-h"><h2>${mTitle(U.cur)}</h2><div class="ctl"><button class="icb txt" type="button" data-a="cal-today">오늘</button><button class="icb" type="button" data-a="cal-prev" aria-label="이전 달">${ico('cl','')}</button><button class="icb" type="button" data-a="cal-next" aria-label="다음 달">${ico('cr','')}</button></div></div>
+      ${grid(U.cur,true,2)}
+    </section>
+    <div class="day-h"><h2 id="day-h">${isT?'오늘':mdw(sel)}${hol(sel)?` · ${hol(sel)}`:''}</h2>${isT?'':'<button class="more" type="button" data-a="cal-today">오늘 보기</button>'}</div>
+    <div class="two day">
+      <section class="sec" id="s-ev"><div class="sec-h"><h2>일정</h2><a class="more" href="#cal">일정 추가</a></div><ul>${evRows(sel,true)||`<li class="empty">${isT?'오늘은':'이 날은'} 일정이 없습니다. 위 입력창에 "3시 회의"처럼 적으면 들어갑니다.</li>`}</ul></section>
+      <section class="sec" id="s-td"><div class="sec-h"><h2>할 일</h2><div class="seg" role="group" aria-label="할 일 구분">${seg}</div></div><ul>${tdHtml||`<li class="empty">${tdNone}</li>`}</ul>
+        <form class="tadd" data-f="td-add" novalidate><label class="sr" for="td-add">할 일 추가</label><input id="td-add" type="text" placeholder="할 일 추가" autocomplete="off" value="${esc(U.ta.n)}">
+          <div class="tadd-r"><div class="seg" role="group" aria-label="추가할 할 일 구분"><button type="button" data-a="tga" data-v="w" aria-pressed="${U.ta.g==='w'}">업무</button><button type="button" data-a="tga" data-v="p" aria-pressed="${U.ta.g==='p'}">개인</button></div>
+          <label for="td-due">기한</label><input id="td-due" type="date" data-a="td-due" value="${U.ta.due}"><button class="btn-o" type="submit">추가</button></div></form></section>
     </div>
   </div>
-  <aside class="side" aria-label="달력">
-    <div class="cal-h"><h2>${mTitle(U.cur)}</h2><div class="ctl"><button class="icb sm" type="button" data-a="cal-prev" aria-label="이전 달">${ico('cl','')}</button><button class="icb sm" type="button" data-a="cal-next" aria-label="다음 달">${ico('cr','')}</button></div></div>
-    ${grid(U.cur,false)}
-    <div class="sub-h">${head}</div><ul>${side}</ul>
+  <aside class="side" aria-label="루틴">
+    <section id="s-rt"><div class="side-top"><h2 class="side-h">오늘 루틴<span class="n">${rc.due?rc.done+'/'+rc.due:''}</span></h2><a class="more" href="#routine">루틴 관리</a></div><ul>${rtRows()}</ul></section>
+    <div class="sub-h"><h3>앞으로 2주</h3><a class="more" href="#cal">달력 열기</a></div><ul>${upcoming()}</ul>
   </aside>`;
 };
 V.cal=()=>{
@@ -1073,8 +1102,8 @@ V.review=()=>{
       <section class="sec"><div class="sec-h"><h2>요일별</h2><span class="n">한 것 / 하기로 한 것</span></div><div class="dw">${byDay.map((o,i)=>`<div class="${i===0?'sun':i===6?'sat':''}${lowest&&lowest.d===o.d?' low':''}"><span class="v">${o.due?o.done+'/'+o.due:'–'}</span><span class="b" style="--v:${o.due?(o.done/o.due).toFixed(3):0}"><i></i></span><span class="w">${WD[i]}</span></div>`).join('')}</div></section>
     </div>`:''}
     <div class="two"${tot?' style="margin-top:2.5rem"':''}>
-      <section class="sec"><div class="sec-h"><h2>끝낸 일</h2><span class="n">${fin.length}건</span></div><ul>${fin.map(t=>`<li class="row"><span class="tm wide">${WD[dow(t.done)]} ${pd(t.done).getDate()}일</span><div class="t"><b>${esc(t.n)}</b>${t.c?`<span class="m">${tag(t.c)}</span>`:''}</div></li>`).join('')||'<li class="empty">이 주에 끝낸 일이 없습니다.</li>'}</ul></section>
-      <section class="sec"><div class="sec-h"><h2>기한을 넘긴 일</h2><span class="n${miss.length?' late':''}">${miss.length}건</span></div><ul>${miss.map(t=>`<li class="row"><span class="tm wide">${WD[dow(t.due)]} ${pd(t.due).getDate()}일</span><div class="t"><b>${esc(t.n)}</b><span class="m"><span class="${t.done?'':'late'}">${t.done?'늦게 끝냄':diff(T,t.due)+'일 지남'}</span>${tag(t.c)}</span></div></li>`).join('')||'<li class="empty">기한을 넘긴 일이 없습니다.</li>'}</ul></section>
+      <section class="sec"><div class="sec-h"><h2>끝낸 일</h2><span class="n">${fin.length}건</span></div><ul>${fin.map(t=>`<li class="row"><span class="tm wide">${WD[dow(t.done)]} ${pd(t.done).getDate()}일</span><div class="t"><b>${esc(t.n)}</b><span class="m">${gtag(t)}</span></div></li>`).join('')||'<li class="empty">이 주에 끝낸 일이 없습니다.</li>'}</ul></section>
+      <section class="sec"><div class="sec-h"><h2>기한을 넘긴 일</h2><span class="n${miss.length?' late':''}">${miss.length}건</span></div><ul>${miss.map(t=>`<li class="row"><span class="tm wide">${WD[dow(t.due)]} ${pd(t.due).getDate()}일</span><div class="t"><b>${esc(t.n)}</b><span class="m"><span class="${t.done?'':'late'}">${t.done?'늦게 끝냄':diff(T,t.due)+'일 지남'}</span>${gtag(t)}</span></div></li>`).join('')||'<li class="empty">기한을 넘긴 일이 없습니다.</li>'}</ul></section>
     </div>
   </div>
   <aside class="side" aria-label="회고">
@@ -1154,6 +1183,9 @@ const A={
   'ev-timed'(el){syncEv();U.f.ev.timed=el.dataset.v==='1';render()},
   'ev-cancel'(){U.f.ev=evBlank(U.sel);render()},
   'ev-del'(el){const e=S.ev.find(x=>x.id===el.dataset.id);if(!e)return;U.f.ev=evBlank(U.sel);commit(`"${e.n}" 일정을 지웠습니다${e.r?" (매주 반복 전체)":""}`,()=>{S.ev=S.ev.filter(x=>x.id!==e.id)})},
+  tg(el){const a=$('#td-add');if(a)U.ta.n=a.value;U.tg=el.dataset.v;if(U.tg!=='all')U.ta.g=U.tg;U.tdEdit=null;render()},
+  tga(el){const a=$('#td-add');if(a)U.ta.n=a.value;U.ta.g=el.dataset.v;if(U.tg!=='all')U.tg=U.ta.g;render({focus:'#td-add'})},
+  'td-due'(el){U.ta.due=valid(el.value)?el.value:''},
   'td-toggle'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;t.done=t.done?'':today();save();render()},
   'td-today'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;commit('오늘 할 일로 옮겼습니다',()=>{t.due=today()})},
   'td-edit'(el){U.tdEdit=el.dataset.id;render({focus:'#te-n'})},
@@ -1169,7 +1201,7 @@ const A={
   'rt-cancel'(){U.f.rt=rtBlank();render()},
   'rt-del'(el){const r=S.rt.find(x=>x.id===el.dataset.id);if(!r)return;U.f.rt=rtBlank();commit(`"${r.n}" 루틴을 지웠습니다`,()=>{S.rt=S.rt.filter(x=>x.id!==r.id)})},
   'it-keep'(el){const x=S.it.find(y=>y.id===el.dataset.id),v=el.value.split('/'),c=cat(v[0]),f=fold(v[1]);if(!x||!c)return;commit(`"${x.n}"${josa(x.n,'을','를')} ${c.n}${f?' › '+f.n:''}에 보관했습니다`,()=>{x.c=c.id;x.f=f?f.id:''})},
-  'it-todo'(el){const x=S.it.find(y=>y.id===el.dataset.id);if(!x)return;if(U.itSel===x.id)U.itSel=null;commit('할 일로 옮겼습니다',()=>{S.it=S.it.filter(y=>y.id!==x.id);S.td.push({id:uid(),n:x.b||x.n,c:'',due:'',done:'',at:today()})})},
+  'it-todo'(el){const x=S.it.find(y=>y.id===el.dataset.id);if(!x)return;if(U.itSel===x.id)U.itSel=null;commit('할 일로 옮겼습니다',()=>{S.it=S.it.filter(y=>y.id!==x.id);S.td.push({id:uid(),n:x.b||x.n,c:'',g:U.ta.g,due:'',done:'',at:today()})})},
   'it-sel'(el){dlgOpen(el.dataset.id)},
   'it-new'(){dlgOpen(null,U.view==='box'&&cat(U.fc)?{c:U.fc,f:fold(U.ff)?U.ff:''}:null)},
   'dlg-close'(){dlgClose(false)},
@@ -1210,13 +1242,13 @@ const F={
     const p=parse(s),snap=JSON.stringify(S),T=today();let msg,alt=null;
     if(p.type==='ev'){const e=Object.assign({id:uid()},p.o);S.ev.push(e);msg=e.r?`매주 일정으로 넣었습니다 · ${WD[dow(e.d)]}요일 ${e.t}`:`일정으로 넣었습니다 · ${md(e.d)} ${e.t||'종일'}`;
       if(e.t)alt={label:'달력에서 보기',fn(){U.sel=e.d;U.cur=e.d.slice(0,7);U.f.ev=evBlank(U.sel);go('cal')}};
-      else alt={label:'할 일로 바꾸기',fn(){S.ev=S.ev.filter(x=>x.id!==e.id);S.td.push({id:uid(),n:e.n,c:'',due:e.d,done:'',at:today()});save();render();toast(`할 일로 바꿨습니다 · ${md(e.d)}까지`)}}}
-    else if(p.type==='td'){const t={id:uid(),n:p.o.n,c:'',due:p.o.due,done:'',at:T};S.td.push(t);msg=p.o.due?`할 일로 넣었습니다 · ${md(p.o.due)}까지`:'할 일로 넣었습니다';
+      else alt={label:'할 일로 바꾸기',fn(){S.ev=S.ev.filter(x=>x.id!==e.id);S.td.push({id:uid(),n:e.n,c:'',g:U.ta.g,due:e.d,done:'',at:today()});save();render();toast(`할 일로 바꿨습니다 · ${md(e.d)}까지`)}}}
+    else if(p.type==='td'){const t={id:uid(),n:p.o.n,c:'',g:U.ta.g,due:p.o.due,done:'',at:T};S.td.push(t);msg=`할 일로 넣었습니다 · ${GN[t.g]}${p.o.due?` · ${md(p.o.due)}까지`:''}`;
       if(!p.o.due)alt={label:'메모로 바꾸기',fn(){S.td=S.td.filter(x=>x.id!==t.id);S.it.unshift({id:uid(),k:'note',n:t.n,b:'',url:'',c:'',d:today()});save();render();toast('정리 대기로 옮겼습니다')}};
       else alt={label:'일정으로 바꾸기',fn(){S.td=S.td.filter(x=>x.id!==t.id);S.ev.push({id:uid(),d:t.due,t:'',e:'',n:t.n,c:''});save();render();toast(`일정으로 바꿨습니다 · ${md(t.due)} 종일`)}}}
     else if(p.type==='rt'){const k=p.o.k||0;S.rt.push({id:uid(),n:p.o.n,t:p.o.t,w:p.o.w,k,from:T,sch:[{from:T,w:p.o.w,k}],log:{}});msg=`루틴으로 넣었습니다 · ${k?`주 ${k}회`:wLabel(p.o.w)} · ${p.o.t||'언제든'}`}
     else{const x=Object.assign({id:uid(),d:T},p.o);S.it.unshift(x);msg='정리 대기에 넣었습니다';
-      if(x.k==='note')alt={label:'할 일로 바꾸기',fn(){S.it=S.it.filter(y=>y.id!==x.id);S.td.push({id:uid(),n:s,c:'',due:'',done:'',at:today()});save();render();toast('할 일로 옮겼습니다')}}}
+      if(x.k==='note')alt={label:'할 일로 바꾸기',fn(){S.it=S.it.filter(y=>y.id!==x.id);S.td.push({id:uid(),n:s,c:'',g:U.ta.g,due:'',done:'',at:today()});save();render();toast('할 일로 옮겼습니다')}}}
     save();q.value='';render();toast(msg,{undo:snap,alt});q.focus();
   },
   async unlock(){
@@ -1230,8 +1262,11 @@ const F={
     }catch(e){er.textContent='연결하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.';er.hidden=false}
     b.disabled=false;b.textContent='들어가기';
   },
-  'td-add'(){const el=$('#td-add'),n=el.value.trim();if(!n){el.focus();return}S.td.push({id:uid(),n,c:'',due:'',done:'',at:today()});save();render({focus:'#td-add'})},
-  'td-save'(f){const t=S.td.find(x=>x.id===f.dataset.id),n=f.elements.n.value.trim();if(!t)return;if(!n){f.elements.n.focus();return}t.n=n;t.due=valid(f.elements.due.value)?f.elements.due.value:'';t.c=f.elements.c.value;U.tdEdit=null;save();render()},
+  'td-add'(){const el=$('#td-add'),d=$('#td-due'),n=el.value.trim();if(!n){el.focus();return}
+    const due=d&&valid(d.value)?d.value:'',T=today();S.td.push({id:uid(),n,c:'',g:U.ta.g,due,done:'',at:T});
+    U.ta.n='';U.ta.due=U.sel===T?'':U.sel;save();render({focus:'#td-add'});
+    if(U.sel!==T&&due!==U.sel)toast(`할 일을 넣었습니다 · ${due?md(due)+'까지':'기한 없음, 오늘 화면에 보입니다'}`)},
+  'td-save'(f){const t=S.td.find(x=>x.id===f.dataset.id),n=f.elements.n.value.trim();if(!t)return;if(!n){f.elements.n.focus();return}t.n=n;t.due=valid(f.elements.due.value)?f.elements.due.value:'';t.g=f.elements.g.value==='p'?'p':'w';U.tdEdit=null;save();render()},
   'ev-save'(){
     syncEv();const f=U.f.ev,n=f.n.trim();
     if(!n){$('#ev-err').hidden=false;$('#ev-n').focus();return}
@@ -1337,6 +1372,7 @@ document.addEventListener('input',ev=>{
   if(t.closest('#dlg')){if(U.d)U.d.dirty=true;const e=$('#d-err');if(e)e.hidden=true;return}
   if(t.id==='box-q'){U.fq=t.value.trim();$('#box-list').innerHTML=boxList()}
   else if(t.id==='q')$('#hint').hidden=!!t.value;
+  else if(t.id==='td-add')U.ta.n=t.value;
   else if(t.id==='ev-n')$('#ev-err').hidden=true;
   else if(t.id==='rt-n')$('#rt-err').hidden=true;
   else if(t.id==='fold-n'||t.id==='fold-rn'){}
