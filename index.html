@@ -545,7 +545,7 @@ try{localStorage.setItem(KEY+'.t','1');localStorage.removeItem(KEY+'.t')}catch(e
 /* ---------- 구글 시트 연결 ----------
    SYNC_URL이 비어 있으면 이 기기에만 저장한다. 주소가 있으면 입장 비밀번호를 넣은 기기만 시트의 내용을 읽고 쓴다.
    합치기: 마지막으로 시트와 맞춘 사본(base)과 비교해서, 이 기기에서 안 고친 것은 시트 쪽을 따르고 고친 것은 이 기기 것을 남긴다. */
-const SYNC_URL='';
+const SYNC_URL='https://script.google.com/macros/s/AKfycbxHfI8VXHkirmiBD9EHXlL-XaDfz_IqsiaKMVj-3GpIEV41Pq3PcwpxiXVdTXtOxx0Hfg/exec';
 const SURL=QS.get('test')?(QS.get('sync')||''):SYNC_URL;
 const KK=KEY+'.key',KB=KEY+'.base',KM=KEY+'.meta';
 const SY={on:!!SURL,key:'',at:0,dirty:false,busy:false,err:'',t:null};
