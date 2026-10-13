@@ -455,9 +455,9 @@ input,textarea{caret-color:var(--go)}
 <div class="gate" id="gate" hidden>
   <form class="gate-in" data-f="unlock" novalidate>
     <h1>하루판</h1>
-    <p>입장 비밀번호를 넣어 주세요. 한 번 넣으면 이 기기에서는 다시 묻지 않습니다.</p>
+    <p>입장 비밀번호를 넣어 주세요. 들어올 때마다 묻습니다.</p>
     <label for="gk">입장 비밀번호</label>
-    <input id="gk" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+    <input id="gk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p class="err" id="gk-err" hidden></p>
     <button class="btn-p" type="submit" id="gk-btn">들어가기</button>
   </form>
@@ -549,7 +549,8 @@ const SYNC_URL='https://script.google.com/macros/s/AKfycbxHfI8VXHkirmiBD9EHXlL-X
 const SURL=QS.get('test')?(QS.get('sync')||''):SYNC_URL;
 const KK=KEY+'.key',KB=KEY+'.base',KM=KEY+'.meta';
 const SY={on:!!SURL,key:'',at:0,dirty:false,busy:false,err:'',t:null};
-try{SY.key=localStorage.getItem(KK)||'';const m=JSON.parse(localStorage.getItem(KM)||'{}');SY.at=m.at||0;SY.dirty=!!m.dirty}catch(e){}
+/* 비밀번호는 기기에 남기지 않는다. 화면을 열 때마다 다시 묻고, 열려 있는 동안만 기억한다. */
+try{localStorage.removeItem(KK);const m=JSON.parse(localStorage.getItem(KM)||'{}');SY.at=m.at||0;SY.dirty=!!m.dirty}catch(e){}
 const J=x=>x===undefined?'':JSON.stringify(x);
 const pick3=(b,l,r)=>J(l)===J(b)?r:l;
 function mergeList(b,l,r,k){
@@ -1094,7 +1095,8 @@ V.set=()=>`<div class="main set">
       <p class="help">분류를 지우면 그 분류에 보관했던 자료는 정리 대기로 돌아갑니다.</p></section>
     <section class="sec"><div class="sec-h"><h2>저장과 백업</h2></div>
       ${SY.on&&SY.key?`<p class="note">고치는 즉시 내 구글 시트에 저장되고, 같은 주소를 여는 다른 기기에서도 같은 내용이 보입니다. 다른 기기에서 고친 내용은 이 화면으로 돌아올 때와 1분마다 불러옵니다.</p>
-      <div class="btns" style="margin-bottom:.75rem"><button class="btn-o" type="button" data-a="sync-now">지금 다시 불러오기</button><button class="btn-o" type="button" data-a="sync-out">이 기기에서 나가기</button></div>`:'<p class="note">지금은 이 기기의 이 브라우저에만 저장됩니다. 다른 기기에서는 보이지 않고, 브라우저 기록을 지우면 함께 지워집니다. 가끔 백업 파일을 받아 두세요.</p>'}
+      <div class="btns" style="margin-bottom:.75rem"><button class="btn-o" type="button" data-a="sync-now">지금 다시 불러오기</button><button class="btn-o" type="button" data-a="sync-lock">지금 잠그기</button><button class="btn-o" type="button" data-a="sync-out">이 기기에서 나가기</button></div>
+      <p class="help" style="margin:-.25rem 0 1rem">비밀번호는 화면을 열 때마다 다시 묻습니다. "이 기기에서 나가기"는 잠그면서 이 기기에 남은 사본도 지웁니다.</p>`:'<p class="note">지금은 이 기기의 이 브라우저에만 저장됩니다. 다른 기기에서는 보이지 않고, 브라우저 기록을 지우면 함께 지워집니다. 가끔 백업 파일을 받아 두세요.</p>'}
       <div class="btns"><button class="btn-o" type="button" data-a="export">백업 파일 받기</button><label class="btn-o" for="imp">백업 불러오기</label><input class="sr" id="imp" type="file" accept="application/json,.json" data-a="import"></div></section>
     <section class="sec"><div class="sec-h"><h2>예시와 초기화</h2></div>
       <div class="btns" style="margin-top:1rem">${S.demo?'<button class="btn-o" type="button" data-a="demo-del">예시 지우기</button>':'<button class="btn-o" type="button" data-a="demo-add">예시 넣어 보기</button>'}<button class="btn-d" type="button" data-a="wipe" style="margin-left:0">모두 지우기</button></div></section>
@@ -1190,6 +1192,7 @@ const A={
   'demo-add'(){commit('예시를 넣었습니다',seed)},
   'demo-del'(){commit('예시를 지웠습니다',unseed)},
   'sync-now'(){pull()},
+  'sync-lock'(){flush();lock('잠갔습니다. 다시 쓰려면 비밀번호를 넣어 주세요.')},
   'sync-out'(){
     if(SY.dirty){toast('아직 구글 시트에 저장하지 못한 내용이 있습니다. 저장된 뒤에 다시 눌러 주세요');pull();return}
     S=blank();try{[KEY,KB,KM].forEach(k=>localStorage.removeItem(k))}catch(e){}
@@ -1222,7 +1225,7 @@ const F={
     b.disabled=true;b.textContent='확인하는 중';er.hidden=true;
     try{
       const r=await api({action:'get',name:'main',key:k});
-      if(r.ok){SY.key=k;try{localStorage.setItem(KK,k)}catch(e){}takeRemote(r);SY.err='';document.body.classList.remove('locked');$('#gate').hidden=true;el.value='';render();if(SY.dirty)push();else status()}
+      if(r.ok){SY.key=k;takeRemote(r);SY.err='';document.body.classList.remove('locked');$('#gate').hidden=true;el.value='';render();if(SY.dirty)push();else status()}
       else{er.textContent=r.error==='auth'?'비밀번호가 맞지 않습니다.':'지금은 확인할 수 없습니다. 잠시 뒤에 다시 눌러 주세요.';er.hidden=false;el.select()}
     }catch(e){er.textContent='연결하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.';er.hidden=false}
     b.disabled=false;b.textContent='들어가기';
