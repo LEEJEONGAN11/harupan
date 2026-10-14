@@ -249,9 +249,20 @@ h2{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
 .hrs button:hover{background:var(--panel-2);color:var(--ink)}
 .pl-mark{position:absolute;left:calc(38% + 3px);right:3px;top:calc((var(--s) - 6) * 3rem + 1px);height:calc((var(--e) - var(--s)) * 3rem - 2px);border-radius:6px;background:var(--go-bg);box-shadow:inset 0 0 0 2px var(--head);pointer-events:none}
 .pl-c{-webkit-user-select:none;user-select:none}
-.pl-rng{display:flex;align-items:center;gap:.5rem}
-.pl-rng select{height:2.5rem;padding:0 .5rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
-.pl-rng b{margin-left:auto;font-size:.875rem;font-weight:700;color:var(--ink-2)}
+/* 아이폰 알람처럼 시와 분을 따로 굴려서 고르는 휠. 가운데 줄에 온 숫자가 고른 값이다. */
+.pl-rng{display:flex;align-items:flex-end;gap:.5rem}
+.pl-rng > span{align-self:center;margin-top:1.25rem;font-weight:700;color:var(--ink-2)}
+.pl-rng b{margin-left:auto;align-self:center;margin-top:1.25rem;font-size:.875rem;font-weight:700;color:var(--ink-2);white-space:nowrap}
+.whl{display:grid;gap:.25rem}
+.whl-l{font-size:.8125rem;font-weight:700;color:var(--ink-2);padding-left:.25rem}
+.whl-w{position:relative;display:flex;align-items:center;padding:0 .25rem;border:1px solid var(--line-2);border-radius:10px;background:#fff}
+.whl-w::before{content:"";position:absolute;left:.25rem;right:.25rem;top:50%;height:2.5rem;transform:translateY(-50%);border-radius:7px;background:var(--panel-2,oklch(0.94 0.008 165));pointer-events:none}
+.wcol{position:relative;width:2.75rem;height:7.5rem;padding:2.5rem 0;overflow-y:scroll;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 32%,#000 68%,transparent);outline:0;border-radius:7px}
+.wcol::-webkit-scrollbar{display:none}
+.wcol:focus-visible{box-shadow:inset 0 0 0 2px var(--go)}
+.wi{height:2.5rem;line-height:2.5rem;text-align:center;scroll-snap-align:center;font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-3);cursor:pointer;transition:color .12s}
+.wi.on{color:var(--ink)}
+.wsep{position:relative;font-size:1.25rem;font-weight:800;color:var(--ink);padding:0 .0625rem}
 .pl-pop .seg button .n{margin-left:.375rem;font-size:.8125rem;font-weight:600;opacity:.75}
 .pl-ck{display:flex;align-items:flex-start;gap:.625rem;min-height:2.75rem;padding:.625rem .25rem;border-bottom:1px solid var(--line);font-weight:600;cursor:pointer;transition:background-color .16s}
 .pl-ck:hover{background:var(--panel)}
@@ -1144,6 +1155,39 @@ V.today=()=>{
 const lenTxt=n=>n%60===0?`${n/60}시간`:n<60?`${n}분`:`${Math.floor(n/60)}시간 ${n%60}분`;
 const hmAdd=(t,n)=>{const m=Math.min(24*60,Math.round(hm(t)*60)+n);return `${pad(Math.floor(m/60))}:${pad(m%60)}`};
 const hmS=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`;
+const toMin=t=>+t.slice(0,2)*60+ +t.slice(3,5);
+const WT={};
+/* 시·분 휠 하나(k: from·to = 고르는 창의 시작·끝, bs·be = 놓인 할 일의 시작·끝). 분은 1분 단위. */
+function wheel(k,t,h0,h1,label){
+  const h=+t.slice(0,2),m=+t.slice(3,5);
+  let hs='',ms='';
+  for(let i=h0;i<=h1;i++)hs+=`<div class="wi${i===h?' on':''}" data-a="whl-pick" data-i="${i-h0}">${pad(i)}</div>`;
+  for(let i=0;i<60;i++)ms+=`<div class="wi${i===m?' on':''}" data-a="whl-pick" data-i="${i}">${pad(i)}</div>`;
+  return `<div class="whl" data-k="${k}" data-h0="${h0}"><span class="whl-l">${label}</span><div class="whl-w"><div class="wcol" id="w-${k}-h" data-u="h" data-i="${h-h0}" tabindex="0" aria-label="${label} 시">${hs}</div><span class="wsep">:</span><div class="wcol" id="w-${k}-m" data-u="m" data-i="${m}" tabindex="0" aria-label="${label} 분">${ms}</div></div></div>`;
+}
+/* 다시 그린 뒤 휠을 고른 값 자리로 돌려놓는다. */
+function wheelSync(){$$('.wcol').forEach(c=>{const h=c.firstElementChild?c.firstElementChild.offsetHeight:40;c.scrollTop=(+c.dataset.i)*h})}
+/* 휠이 멈추면(같은 묶음의 두 휠 모두) 값을 반영한다. */
+function whlSettle(g){
+  if(!g||!document.body.contains(g))return;
+  const k=g.dataset.k,hc=g.querySelector('.wcol[data-u=h]'),mc=g.querySelector('.wcol[data-u=m]');
+  whlSet(k,Math.min(24*60,(+g.dataset.h0+ +hc.dataset.i)*60+ +mc.dataset.i));
+}
+function whlSet(k,mins){
+  if(k==='from'||k==='to'){
+    if(!U.pl.at)return;
+    const f=toMin(U.pl.at),t=U.pl.to?toMin(U.pl.to):f+60;
+    if(k==='from'){mins=Math.min(mins,24*60-1);if(mins===f)return;U.pl.at=hmS(mins);U.pl.to=hmS(Math.min(24*60,mins+Math.max(1,t-f)))}
+    else{mins=Math.max(f+1,mins);if(mins===t&&U.pl.to)return;U.pl.to=hmS(mins)}
+  }else{
+    const p=S.td.find(x=>x.id===U.pl.pick);if(!p||!p.tm)return;
+    const s=toMin(p.tm),len=p.tl||60;
+    if(k==='bs'){mins=Math.min(mins,24*60-5);if(mins===s)return;p.tm=hmS(mins);if(mins+len>24*60)p.tl=24*60-mins}
+    else{mins=Math.max(s+5,mins);if(mins===s+len)return;p.tl=mins-s}
+    save();
+  }
+  render();
+}
 V.plan=()=>{
   const T=today(),d=U.sel,isT=d===T;
   const evs=evOn(d).filter(inG),allDay=evs.filter(e=>!e.t);
@@ -1166,17 +1210,17 @@ V.plan=()=>{
   if(at){
     const s=hm(at),to=U.pl.to&&hm(U.pl.to)>s?U.pl.to:hmAdd(at,60),e=hm(to),g=U.pl.g;
     const cand=tdSorted().filter(t=>!t.done&&!(t.due===d&&t.tm)),inGp=k=>cand.filter(t=>tg(t)===k);
-    const opt=(a,b,cur)=>{let o='';for(let m=a;m<=b;m+=30){const v=`${pad(Math.floor(m/60))}:${pad(m%60)}`;o+=`<option value="${v}"${v===cur?' selected':''}>${v}</option>`}return o};
     const n=U.pl.chk.length+(U.pl.nw.trim()?1:0),list=inGp(g);
     blocks+=`<i class="pl-mark" style="--s:${s};--e:${e}"></i><form class="pl-pop" id="pl-pop" data-a="pl-nop" data-f="pl-go" novalidate style="${popAt(s,e)}">
-    <div class="pl-rng"><select id="pl-from" data-a="pl-from" aria-label="시작">${opt(H0*60,H1*60-30,at)}</select><span>~</span><select id="pl-to" data-a="pl-to" aria-label="끝">${opt(s*60+30,H1*60,to)}</select><b>${lenTxt(Math.round((e-s)*60))}</b></div>
+    <div class="pl-rng">${wheel('from',at,H0,H1-1,'시작')}<span>~</span>${wheel('to',to,H0,H1,'끝')}<b>${lenTxt(toMin(to)-toMin(at))}</b></div>
     <div class="seg" role="group" aria-label="고를 구분">${['w','p'].map(k=>`<button type="button" data-a="pl-g" data-v="${k}" aria-pressed="${g===k}">${GN[k]}<span class="n">${inGp(k).length}</span></button>`).join('')}</div>
     ${list.length?`<ul>${list.map(t=>`<li><label class="pl-ck"><input type="checkbox" data-a="pl-chk" data-id="${t.id}"${U.pl.chk.includes(t.id)?' checked':''}><span>${esc(t.n)}</span>${t.due?`<small>${t.due<T?`${diff(T,t.due)}일 지남`:t.tm?`${dueLabel(t.due)} ${t.tm}`:dueLabel(t.due)+'까지'}</small>`:''}</label></li>`).join('')}</ul>`:`<p class="help">${GN[g]} 할 일 중 아직 시간을 안 정한 것이 없습니다.</p>`}
     <div class="pl-nw"><label class="sr" for="pl-new">새로 적어 넣기</label><input id="pl-new" type="text" placeholder="할 일에 없는 것 적기 (${GN[g]})" autocomplete="off" value="${esc(U.pl.nw)}"></div>
     <div class="btns"><button class="btn-p" type="submit" id="pl-go">${n?`${n}개 넣기`:'넣기'}</button><button class="btn-o" type="button" data-a="pl-atx">닫기</button></div>
     <p class="help">여러 개를 고르면 ${at}~${to} 사이를 나눠서 차례로 넣습니다.</p></form>`}
   if(pickOn){const s=clampS(hm(pick.tm)),en=Math.min(H1,s+Math.max(30,pick.tl||60)/60);
-    blocks+=`<div class="pl-pop" id="pl-pop" data-a="pl-nop" style="${popAt(s,en)}"><h3><b>${pick.tm} – ${hmAdd(pick.tm,pick.tl||60)}</b>${esc(pick.n)}</h3>
+    blocks+=`<div class="pl-pop" id="pl-pop" data-a="pl-nop" style="${popAt(s,en)}"><h3>${esc(pick.n)}</h3>
+    <div class="pl-rng">${wheel('bs',pick.tm,H0,H1-1,'시작')}<span>~</span>${wheel('be',hmAdd(pick.tm,pick.tl||60),H0,H1,'끝')}<b>${lenTxt(pick.tl||60)}</b></div>
     <div class="duec" role="group" aria-label="길이"><span class="lab">길이</span>${[30,60,90,120,180].map(n=>`<button type="button" data-a="pl-len" data-id="${pick.id}" data-v="${n}" aria-pressed="${(pick.tl||60)===n}">${lenTxt(n)}</button>`).join('')}</div>
     <div class="btns"><button class="btn-o" type="button" data-a="pl-out" data-id="${pick.id}">시간표에서 빼기</button><button class="btn-o" type="button" data-a="pl-pick" data-id="${pick.id}">닫기</button></div>
     <p class="help">다른 칸을 누르면 그 시간으로 옮깁니다.</p></div>`}
@@ -1432,6 +1476,7 @@ function render(o={}){
   if(U.ff!=='all'&&U.ff!==''&&!fold(U.ff))U.ff='all';
   v.className='view'+(U.view==='set'?' one':U.view==='box'?' full':U.view==='today'?' t3':U.view==='plan'?' pl3':'');
   v.innerHTML=V[U.view]();
+  wheelSync();
   $$('.tabs a').forEach(a=>{if(a.dataset.v===U.view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
   const rc=rtCount(),nr=$('#n-rt'),nb=$('#n-box'),inb=inbox().length;
   nr.hidden=!rc.due;nr.textContent=rc.done+'/'+rc.due;nb.hidden=!inb;nb.textContent=inb;
@@ -1518,8 +1563,7 @@ const A={
   'pl-at'(el){plPlace(el.dataset.id,el.dataset.v)},
   'pl-slot'(el,ev){if(Date.now()-U.pl.dragEnd<400)return;const tm=slotTime(el,ev.clientY);if(U.pl.pick){plPlace(U.pl.pick,tm);return}if(U.pl.at===tm){A['pl-atx']();return}plOpen(tm,hmAdd(tm,60))},
   'pl-atx'(){U.pl.at=U.pl.to=null;U.pl.chk=[];U.pl.nw='';render()},
-  'pl-from'(el){const len=U.pl.to?hm(U.pl.to)-hm(U.pl.at):1;U.pl.at=el.value;U.pl.to=hmAdd(el.value,Math.round(Math.max(.5,len)*60));render()},
-  'pl-to'(el){U.pl.to=el.value;render()},
+  'whl-pick'(el){const c=el.parentElement,g=el.closest('.whl');c.dataset.i=el.dataset.i;if(g){clearTimeout(WT[g.dataset.k]);whlSettle(g)}},
   'pl-g'(el){U.pl.g=el.dataset.v==='p'?'p':'w';render()},
   'pl-chk'(el){const id=el.dataset.id;U.pl.chk=el.checked?U.pl.chk.filter(x=>x!==id).concat(id):U.pl.chk.filter(x=>x!==id);plCount()},
   'pl-nop'(){},
@@ -1800,6 +1844,16 @@ document.addEventListener('dragover',ev=>{const c=ev.target.closest&&ev.target.c
 document.addEventListener('dragleave',ev=>{const c=ev.target.closest&&ev.target.closest('.pl-c');if(c&&!c.contains(ev.relatedTarget))c.classList.remove('drop')});
 document.addEventListener('drop',ev=>{const c=ev.target.closest&&ev.target.closest('.pl-c');if(!c||!U.pl.drag)return;ev.preventDefault();const id=U.pl.drag;U.pl.drag=null;plPlace(id,slotTime(c,ev.clientY))});
 document.addEventListener('dragend',()=>{U.pl.drag=null;$$('.pl-c.drop').forEach(c=>c.classList.remove('drop'))});
+/* 시·분 휠: 사람이 손가락·마우스 휠·키보드로 굴린 휠만 값으로 받는다(다시 그린 뒤 자리를 맞추는 움직임은 무시).
+   굴리는 동안 가운데 숫자를 진하게 하고, 같은 묶음(시작 또는 끝)의 휠이 모두 멈추면 반영한다. */
+['touchstart','pointerdown','wheel','keydown'].forEach(t=>document.addEventListener(t,ev=>{const c=ev.target.closest&&ev.target.closest('.wcol');if(c)c.dataset.t='1'},{capture:true,passive:true}));
+document.addEventListener('scroll',ev=>{
+  const c=ev.target;if(!c||!c.classList||!c.classList.contains('wcol')||c.dataset.t!=='1')return;
+  const h=c.firstElementChild?c.firstElementChild.offsetHeight:40,i=Math.max(0,Math.min(c.children.length-1,Math.round(c.scrollTop/h)));
+  if(+c.dataset.i!==i){c.dataset.i=i;[...c.children].forEach((e,j)=>e.classList.toggle('on',j===i))}
+  const g=c.closest('.whl'),k=g&&g.dataset.k;if(!k)return;
+  clearTimeout(WT[k]);WT[k]=setTimeout(()=>whlSettle(g),150);
+},true);
 /* 시간표: PC에서 빈 칸을 위아래로 끌면 그 시간 범위를 잡고 고르는 창을 연다 */
 let PD=null;
 const pdRange=(p,y)=>{const b=hm(slotTime(p.c,y)),a=hm(p.a);return [Math.min(a,b),Math.max(a,b)+.5]};
