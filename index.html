@@ -2,8 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#07402d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="하루판">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <title>하루판</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
 <style>
@@ -40,7 +48,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .i{width:1.125rem;height:1.125rem;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-.bar{background:var(--head);color:#fff;position:sticky;top:0;z-index:10}
+.bar{background:var(--head);color:#fff;position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
+a,button,label,select,input,summary{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .bar-in{max-width:80rem;margin:0 auto;padding:0 2rem;height:3.75rem;display:flex;align-items:center;gap:2rem}
 .brand{font-size:1.1875rem;font-weight:800;letter-spacing:-.01em}
 .tabs{display:flex;align-self:stretch;gap:.25rem}
@@ -70,8 +79,12 @@ button,input,select,textarea{font:inherit;color:inherit}
 .side{background:var(--panel);border-radius:12px;padding:1.5rem;position:sticky;top:5.25rem;max-height:calc(100vh - 6.5rem);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
 .banner{display:flex;align-items:center;justify-content:space-between;gap:.5rem 1rem;flex-wrap:wrap;background:oklch(0.965 0.03 90);border:1px solid oklch(0.86 0.06 90);border-radius:10px;padding:.625rem 1rem;margin-bottom:1.5rem;font-weight:600;font-size:.9375rem}
 .locked .bar,.locked .page{display:none}
-.gate{min-height:100vh;display:grid;place-items:center;padding:1.5rem;background:var(--panel)}
+.gate{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:1.5rem;padding-top:calc(1.5rem + env(safe-area-inset-top));background:var(--panel)}
+.gate::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top);background:var(--head)}
 .gate-in{width:min(24rem,100%);background:#fff;border-radius:14px;padding:2rem;box-shadow:0 12px 36px oklch(0.2 0.02 165 / .12);display:grid;gap:.5rem}
+.gate-in > div{display:grid;gap:.5rem}
+.gate-in .btn-p.big{height:3.25rem;font-size:1.0625rem;margin-top:.75rem}
+.gate-in .more{justify-self:center;margin:.5rem 0 0}
 .gate-in h1{color:var(--head)}
 .gate-in p{color:var(--ink-2);font-weight:500;margin-bottom:.75rem}
 .gate-in label{font-size:.875rem;font-weight:700}
@@ -471,6 +484,13 @@ input,textarea{caret-color:var(--go)}
 .set-row{display:grid;grid-template-columns:6.5rem minmax(0,1fr) auto;gap:.5rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--line)}
 .set-row .btn-d{margin:0}
 .set .note{color:var(--ink-2);font-weight:500;margin:.75rem 0 1rem;max-width:40rem}
+.set .note.on{display:flex;align-items:center;gap:.5rem;color:var(--ink);font-weight:700}
+.set .note.on i{flex:none;width:.5rem;height:.5rem;border-radius:50%;background:oklch(0.62 0.15 155)}
+.nt-row{display:grid;grid-template-columns:minmax(0,1fr) 9rem;gap:.75rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.nt-row label{font-weight:700}
+.nt-row label small{display:block;font-size:.875rem;font-weight:500;color:var(--ink-2)}
+.nt-row select{height:2.5rem;width:100%}
+.nt-h{font-size:.875rem;font-weight:700;color:var(--ink-2);margin:1.5rem 0 .125rem}
 
 .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:.625rem;max-width:calc(100vw - 2rem);background:var(--ink);color:#fff;font-size:.9375rem;font-weight:600;padding:.5625rem .625rem .5625rem 1rem;border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 165 / .28)}
 .toast span{padding:.25rem 0;overflow-wrap:anywhere}
@@ -485,12 +505,17 @@ input,textarea{caret-color:var(--go)}
   .view.pl3 .side{margin-top:2rem}
   .side{position:static;max-height:none}
 }
+@media (min-width:761px){.fold-b{display:none}}
 @media (max-width:760px){
   .pl-pop{left:3px}
+  /* 폰: 달력은 고른 날이 든 한 주만 보이고, "한 달"을 누르면 펼친다. 할 일이 첫 화면에 바로 보이게 하려는 것. */
+  .tcal:not(.open) .grid tbody tr:not(.cw){display:none}
+  /* 아이폰은 글자가 16px보다 작은 입력 칸을 누르면 화면을 확대해 버린다. */
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{font-size:16px}
 }
 @media (max-width:760px){
-  html{scroll-padding-top:4.5rem}
-  body{padding-bottom:3.5rem}
+  html{scroll-padding-top:calc(4.5rem + env(safe-area-inset-top))}
+  body{padding-bottom:calc(3.5rem + env(safe-area-inset-bottom))}
   .bar-in{height:auto;gap:.75rem;padding:.5625rem 1rem}
   .brand{font-size:1.0625rem}
   .quick{flex:1;margin:0}
@@ -532,7 +557,7 @@ input,textarea{caret-color:var(--go)}
   .tbl td:last-child,.tbl th:last-child{display:none}
   .dw{gap:.375rem}
   .set-row{grid-template-columns:5.5rem minmax(0,1fr) auto}
-  .dlg{width:100vw;height:100dvh;border-radius:0}
+  .dlg{width:100vw;height:100dvh;border-radius:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
   .dlg-b{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(11rem,1fr) auto;overflow:auto}
   .dlg-s{border-left:0;border-top:1px solid var(--line)}
   .dlg-h{padding-left:1rem}
@@ -565,11 +590,18 @@ input,textarea{caret-color:var(--go)}
 <div class="gate" id="gate" hidden>
   <form class="gate-in" data-f="unlock" novalidate>
     <h1>하루판</h1>
-    <p>입장 비밀번호를 넣어 주세요. 들어올 때마다 묻습니다.</p>
-    <label for="gk">입장 비밀번호</label>
-    <input id="gk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <p class="err" id="gk-err" hidden></p>
-    <button class="btn-p" type="submit" id="gk-btn">들어가기</button>
+    <div id="gate-bio" hidden>
+      <button class="btn-p big" type="button" data-a="bio-open" id="bio-btn">얼굴·지문으로 열기</button>
+      <p class="err" id="bio-err" hidden></p>
+      <button class="more" type="button" data-a="gate-pw">비밀번호로 열기</button>
+    </div>
+    <div id="gate-pw">
+      <p>입장 비밀번호를 넣어 주세요. 들어올 때마다 묻습니다.</p>
+      <label for="gk">입장 비밀번호</label>
+      <input id="gk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="err" id="gk-err" hidden></p>
+      <button class="btn-p" type="submit" id="gk-btn">들어가기</button>
+    </div>
   </form>
 </div>
 
@@ -647,7 +679,7 @@ const ico=(k,c='ic')=>`<svg class="i ${c}" aria-hidden="true"><use href="#${k}"/
 const kindOf=u=>/drive\.google|docs\.google|\.(pdf|xlsx?|docx?|pptx?|hwpx?|zip|dwg)(\?|#|$)/i.test(u)?'file':'link';
 
 const DEF_CATS=[{id:'work',n:'업무',col:'blue'},{id:'biz',n:'창업',col:'orange'},{id:'home',n:'집',col:'plum'},{id:'study',n:'공부',col:'teal'}];
-const blank=()=>({v:1,cats:JSON.parse(JSON.stringify(DEF_CATS)),ev:[],td:[],rt:[],it:[],memo:{},fold:[],demo:false});
+const blank=()=>({v:1,cats:JSON.parse(JSON.stringify(DEF_CATS)),ev:[],td:[],rt:[],it:[],memo:{},fold:[],cfg:{},demo:false});
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.v===1)return Object.assign(blank(),o)}}catch(e){}return blank()}
 let S=load(),canSave=true,savedAt=null;
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));savedAt=now();canSave=true}catch(e){canSave=false}}
@@ -659,7 +691,8 @@ try{localStorage.setItem(KEY+'.t','1');localStorage.removeItem(KEY+'.t')}catch(e
 const SYNC_URL='https://script.google.com/macros/s/AKfycbxHfI8VXHkirmiBD9EHXlL-XaDfz_IqsiaKMVj-3GpIEV41Pq3PcwpxiXVdTXtOxx0Hfg/exec';
 const SURL=QS.get('test')?(QS.get('sync')||''):SYNC_URL;
 const KK=KEY+'.key',KB=KEY+'.base',KM=KEY+'.meta';
-const SY={on:!!SURL,key:'',at:0,dirty:false,busy:false,err:'',t:null};
+const RELOCK=QS.get('test')&&QS.get('relock')?+QS.get('relock'):180000;
+const SY={on:!!SURL,key:'',tk:false,at:0,dirty:false,busy:false,err:'',t:null};
 /* 비밀번호는 기기에 남기지 않는다. 화면을 열 때마다 다시 묻고, 열려 있는 동안만 기억한다. */
 try{localStorage.removeItem(KK);const m=JSON.parse(localStorage.getItem(KM)||'{}');SY.at=m.at||0;SY.dirty=!!m.dirty}catch(e){}
 const J=x=>x===undefined?'':JSON.stringify(x);
@@ -685,7 +718,43 @@ function merge3(b,l,r){
   o.memo={};
   new Set([...Object.keys(b.memo||{}),...Object.keys(l.memo||{}),...Object.keys(r.memo||{})]).forEach(k=>{const v=pick3((b.memo||{})[k],(l.memo||{})[k],(r.memo||{})[k]);if(v!==undefined)o.memo[k]=v});
   o.demo=!!pick3(b.demo,l.demo,r.demo);
+  const nt=pick3((b.cfg||{}).nt,(l.cfg||{}).nt,(r.cfg||{}).nt);if(nt)o.cfg.nt=nt;
   return o;
+}
+/* 열려 있는 동안 서버에 보이는 것: 비밀번호로 열었으면 비밀번호, 얼굴·지문으로 열었으면 그때 받은 입장표 */
+const cred=()=>SY.tk?{tok:SY.key}:{key:SY.key};
+const b64u=buf=>{const a=new Uint8Array(buf);let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const unb=s=>{s=String(s).replace(/-/g,'+').replace(/_/g,'/');return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const APP=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const devName=()=>{const u=navigator.userAgent;return (IOS?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'Windows':/Mac/.test(u)?'Mac':'기기')+(APP?' 앱':'')};
+/* ---------- 얼굴·지문으로 열기 ----------
+   기기에는 비밀번호를 남기지 않는다. 이 기기 열쇠의 이름(id)만 적어 두고, 열 때마다 서버가 낸 문제에 기기가 얼굴·지문 확인 뒤 서명해서 답한다. */
+const KBIO=KEY+'.bio',BIO={ch:'',at:0};
+function bioRec(){try{const r=JSON.parse(localStorage.getItem(KBIO)||'null');return r&&r.id&&!r.bad&&window.PublicKeyCredential?r:null}catch(e){return null}}
+/* 서버가 받아 주지 않은 등록은 표시만 해 두었다가, 다음에 열렸을 때 서버 쪽 기록까지 지운다. */
+function bioSweep(){try{const o=JSON.parse(localStorage.getItem(KBIO)||'null');if(o&&o.bad){localStorage.removeItem(KBIO);api(Object.assign({action:'bio-del',id:o.id},cred())).catch(()=>{})}}catch(e){}}
+function bioPrep(){if(!SY.on||!bioRec())return;api({action:'bio-ch'}).then(r=>{if(r.ok){BIO.ch=r.ch;BIO.at=Date.now()}}).catch(()=>{})}
+/* 기기가 돌려준 등록 결과에서 공개 열쇠(65바이트)를 꺼낸다. */
+function bioPub(resp){
+  try{if(resp.getPublicKey){const k=new Uint8Array(resp.getPublicKey());if(k.length>=65){const p=k.slice(k.length-65);if(p[0]===4)return p}}}catch(e){}
+  const a=new Uint8Array(resp.attestationObject);
+  for(let i=0;i+70<=a.length;i++)if(a[i]===0x21&&a[i+1]===0x58&&a[i+2]===0x20&&a[i+35]===0x22&&a[i+36]===0x58&&a[i+37]===0x20){const p=new Uint8Array(65);p[0]=4;p.set(a.slice(i+3,i+35),1);p.set(a.slice(i+38,i+70),33);return p}
+  return null;
+}
+/* ---------- 알림 ----------
+   알림 시점은 내용과 함께 저장해서 모든 기기에 똑같이 적용한다(S.cfg.nt). 받을 기기는 기기마다 따로 켠다. */
+const NT_DEF={on:true,ev:30,tk:0,rt:0,brief:'07:00',prev:'21:00'};
+const ntCfg=()=>Object.assign({},NT_DEF,S.cfg&&S.cfg.nt);
+const NT={sup:'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,perm:'default',end:'',busy:false};
+const swReady=()=>Promise.race([navigator.serviceWorker.ready,new Promise((_,no)=>setTimeout(()=>no(new Error('sw')),8000))]);
+async function ntRefresh(){
+  if(!NT.sup)return;
+  try{
+    const p0=NT.perm,e0=NT.end,reg=await navigator.serviceWorker.getRegistration(),sub=reg?await reg.pushManager.getSubscription():null;
+    NT.perm=Notification.permission;NT.end=sub?sub.endpoint:'';
+    if((p0!==NT.perm||e0!==NT.end)&&U.view==='set'&&!typing())render();
+  }catch(e){}
 }
 function saveMeta(){try{localStorage.setItem(KM,JSON.stringify({at:SY.at,dirty:SY.dirty}))}catch(e){}}
 function setBase(json){try{localStorage.setItem(KB,json)}catch(e){}}
@@ -701,10 +770,20 @@ function status(){
   else if(SY.dirty||SY.busy)el.innerHTML='<i class="wait"></i>구글 시트에 저장하는 중';
   else el.innerHTML=`<i></i>구글 시트에 저장됨${tm}`;
 }
-function lock(msg){
-  SY.key='';try{localStorage.removeItem(KK)}catch(e){}
+function lock(msg,pw){
+  SY.key='';SY.tk=false;try{localStorage.removeItem(KK)}catch(e){}
   document.body.classList.add('locked');$('#gate').hidden=false;
-  const e=$('#gk-err');e.textContent=msg||'';e.hidden=!msg;$('#gk').value='';$('#gk').focus();
+  /* 이 기기에서 얼굴·지문 열기를 켜 두었으면 그 단추를 먼저 보이고, 아니면 비밀번호 칸을 보인다. */
+  const bio=!pw&&!!bioRec();
+  $('#gate-bio').hidden=!bio;$('#gate-pw').hidden=bio;
+  ['#gk-err','#bio-err'].forEach(s=>{$(s).hidden=true});
+  const e=$(bio?'#bio-err':'#gk-err');e.textContent=msg||'';e.hidden=!msg;$('#gk').value='';
+  if(bio){bioPrep();$('#bio-btn').focus()}else $('#gk').focus();
+}
+/* 열쇠가 맞았을 때: 받은 내용을 맞추고 화면을 연다. */
+function enter(r){
+  takeRemote(r);SY.err='';document.body.classList.remove('locked');$('#gate').hidden=true;$('#gk').value='';
+  bioSweep();render();if(SY.dirty)push();else status();ntRefresh();
 }
 function takeRemote(r){
   if(!r.exists){SY.dirty=true;return}
@@ -718,8 +797,8 @@ async function pull(){
   if(!SY.on||!SY.key||SY.busy)return;
   SY.busy=true;status();
   try{
-    const r=await api({action:'get',name:'main',key:SY.key});
-    if(!r.ok){if(r.error==='auth'){SY.busy=false;lock('비밀번호가 바뀌었습니다. 새 비밀번호를 넣어 주세요.');return}throw new Error(r.error)}
+    const r=await api(Object.assign({action:'get',name:'main'},cred()));
+    if(!r.ok){if(r.error==='auth'){SY.busy=false;lock(SY.tk?'오래 열어 두어 잠겼습니다. 다시 열어 주세요.':'비밀번호가 바뀌었습니다. 새 비밀번호를 넣어 주세요.');return}throw new Error(r.error)}
     const before=SY.at;takeRemote(r);SY.err='';
     if(SY.at!==before&&!typing())render();
   }catch(e){SY.err='net'}
@@ -734,10 +813,10 @@ async function push(){
   SY.busy=true;status();
   const json=JSON.stringify(S),at=Date.now();let again=false;
   try{
-    const r=await api({action:'set',name:'main',key:SY.key,json,at,rev:1,expect:SY.at});
+    const r=await api(Object.assign({action:'set',name:'main',json,at,rev:1,expect:SY.at},cred()));
     if(r.ok){SY.at=at;SY.dirty=JSON.stringify(S)!==json;setBase(json);SY.err='';savedAt=now()}
     else if(r.error==='conflict')again=true;
-    else if(r.error==='auth'){SY.busy=false;lock('비밀번호가 바뀌었습니다. 새 비밀번호를 넣어 주세요.');return}
+    else if(r.error==='auth'){SY.busy=false;lock(SY.tk?'오래 열어 두어 잠겼습니다. 다시 열어 주세요.':'비밀번호가 바뀌었습니다. 새 비밀번호를 넣어 주세요.');return}
     else throw new Error(r.error);
   }catch(e){SY.err='net'}
   SY.busy=false;saveMeta();
@@ -748,14 +827,14 @@ async function push(){
 function flush(){
   if(!SY.on||!SY.key||!SY.dirty||!navigator.sendBeacon)return;
   clearTimeout(SY.t);
-  try{navigator.sendBeacon(SURL,new Blob([JSON.stringify({action:'set',name:'main',key:SY.key,json:JSON.stringify(S),at:Date.now(),rev:1,expect:SY.at})],{type:'text/plain;charset=utf-8'}))}catch(e){}
+  try{navigator.sendBeacon(SURL,new Blob([JSON.stringify(Object.assign({action:'set',name:'main',json:JSON.stringify(S),at:Date.now(),rev:1,expect:SY.at},cred()))],{type:'text/plain;charset=utf-8'}))}catch(e){}
 }
 
 
 const evBlank=d=>({id:null,n:'',d,timed:true,t:'09:00',e:'',c:'',g:'',r:''});
 const rtBlank=()=>({id:null,n:'',timed:false,t:'07:00',w:[1,1,1,1,1,1,1],mode:'days',k:3});
 const T0=today();
-const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tg:'all',ta:{n:'',due:'',g:'w'},pl:{pick:null,drag:null,at:null},tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
+const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tg:'all',ta:{n:'',due:'',g:'w'},pl:{pick:null,drag:null,at:null},calOpen:false,hid:0,tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
 
 const cat=id=>S.cats.find(c=>c.id===id);
 const kc=id=>{const c=cat(id);return c?'k-'+c.col:'k-none'};
@@ -919,8 +998,9 @@ function upcoming(){
 function grid(ym,big,lim){
   const a=ym.split('-').map(Number),first=new Date(a[0],a[1]-1,1).getDay(),days=new Date(a[0],a[1],0).getDate(),T=today();
   let h='',n=1-first;
+  const selN=U.sel.slice(0,7)===ym?+U.sel.slice(8):0;
   while(n<=days){
-    h+='<tr>';
+    h+=selN&&selN>=n&&selN<n+7?'<tr class="cw">':'<tr>';
     for(let i=0;i<7;i++,n++){
       if(n<1||n>days){h+='<td></td>';continue}
       const d=`${ym}-${pad(n)}`,ev=evOn(d).filter(inG),td=S.td.filter(t=>t.due===d&&!t.done&&inG(t)),ho=hol(d);
@@ -1024,8 +1104,8 @@ V.today=()=>{
   return `<div class="t-top">
     <header class="vh"><div class="vh-r"><h1>${mdw(T)}</h1>${gSeg('화면에 보일 구분')}</div>${sum}</header>
     ${first}
-    <section class="tcal" aria-label="달력">
-      <div class="cal-h"><h2>${mTitle(U.cur)}</h2><div class="ctl"><button class="icb txt" type="button" data-a="cal-today">오늘</button><button class="icb" type="button" data-a="cal-prev" aria-label="이전 달">${ico('cl','')}</button><button class="icb" type="button" data-a="cal-next" aria-label="다음 달">${ico('cr','')}</button></div></div>
+    <section class="tcal${U.calOpen||U.sel.slice(0,7)!==U.cur?' open':''}" aria-label="달력">
+      <div class="cal-h"><h2>${mTitle(U.cur)}</h2><div class="ctl"><button class="icb txt fold-b" type="button" data-a="cal-fold" aria-expanded="${!!U.calOpen}">${U.calOpen?'한 주만':'한 달'}</button><button class="icb txt" type="button" data-a="cal-today">오늘</button><button class="icb" type="button" data-a="cal-prev" aria-label="이전 달">${ico('cl','')}</button><button class="icb" type="button" data-a="cal-next" aria-label="다음 달">${ico('cr','')}</button></div></div>
       ${grid(U.cur,true,2)}
     </section>
   </div>
@@ -1269,16 +1349,47 @@ V.review=()=>{
     <ul class="memo">${memos.map(k=>`<li><span>${md(k)} – ${md(add(k,6))}</span>${esc(S.memo[k].s)}</li>`).join('')||'<li class="empty" style="border:0">적어 둔 회고가 아직 없습니다.</li>'}</ul>
   </aside>`;
 };
+/* 설정의 알림 칸: 위는 이 기기에서 받을지, 아래는 언제 받을지(모든 기기 공통). */
+function ntSec(){
+  const c=ntCfg(),live=SY.on&&SY.key;
+  const sel=(k,opts)=>`<select id="nt-${k}" data-a="nt-set" data-k="${k}">${opts.map(o=>`<option value="${o[0]}"${String(c[k])===String(o[0])?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+  const lead=[[-1,'안 받음'],[0,'정각에'],[5,'5분 전'],[10,'10분 전'],[30,'30분 전'],[60,'1시간 전'],[120,'2시간 전']];
+  const times=(a,b)=>{const o=[['','안 받음']];for(let m=a*60;m<=b*60;m+=30){const t=`${pad(Math.floor(m/60))}:${pad(m%60)}`;o.push([t,t])}return o};
+  const row=(k,n,d,opts)=>`<div class="nt-row"><label for="nt-${k}">${n}<small>${d}</small></label>${sel(k,opts)}</div>`;
+  let dev;
+  if(!live)dev='<p class="note">알림은 구글 시트에 연결해 쓰는 동안에만 받을 수 있습니다.</p>';
+  else if(!NT.sup)dev=IOS&&!APP?'<p class="note">아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있습니다. 사파리 아래쪽의 공유 단추를 누르고 "홈 화면에 추가"를 고른 뒤, 홈 화면에 생긴 하루판으로 열어 주세요.</p>':'<p class="note">이 브라우저는 알림을 받을 수 없습니다.</p>';
+  else if(NT.perm==='denied')dev='<p class="note">이 기기에서 하루판 알림이 막혀 있습니다. 기기 설정의 알림에서 하루판을 허용으로 바꾼 뒤 다시 열어 주세요.</p>';
+  else if(NT.end)dev='<p class="note on"><i></i>이 기기에서 알림을 받는 중</p><div class="btns"><button class="btn-o" type="button" data-a="nt-test">시험 알림 보내기</button><button class="btn-o" type="button" data-a="nt-off">이 기기 알림 끄기</button></div>';
+  else dev='<p class="note">알림은 기기마다 따로 켭니다. 켜면 허용할지 한 번 묻습니다.</p><div class="btns"><button class="btn-p" type="button" data-a="nt-on">이 기기에서 알림 받기</button></div>';
+  return `<section class="sec" id="s-nt" style="margin-top:0"><div class="sec-h"><h2>알림</h2></div>
+      ${dev}
+      ${live?`<h3 class="nt-h">언제 받을지</h3>
+      ${row('ev','일정','시간이 있는 일정',lead)}
+      ${row('tk','시간표에 넣은 할 일','시간표 탭에서 시간을 정한 것',lead)}
+      ${row('rt','루틴','시간을 정한 루틴 중 아직 안 한 것',lead)}
+      ${row('brief','아침 요약','오늘 일정, 오늘까지인 할 일, 밀린 일',times(5,10))}
+      ${row('prev','전날 저녁','내일까지인 할 일이 있을 때',times(18,23))}
+      <p class="help">알림 시점은 폰과 PC에 똑같이 적용됩니다.</p>`:''}</section>`;
+}
+function lockSec(){
+  if(!(SY.on&&SY.key))return '';
+  const rec=bioRec(),can=!!(window.PublicKeyCredential&&navigator.credentials);
+  return `<section class="sec" id="s-lock"><div class="sec-h"><h2>열기와 잠금</h2></div>
+      ${rec?'<p class="note on"><i></i>이 기기는 얼굴·지문으로 엽니다</p>':can?'<p class="note">켜 두면 이 기기에서는 비밀번호 대신 얼굴이나 지문으로 엽니다. 비밀번호는 기기에 남기지 않습니다.</p>':'<p class="note">이 브라우저는 얼굴·지문 열기를 쓸 수 없어 비밀번호로만 엽니다.</p>'}
+      <div class="btns">${rec?'<button class="btn-o" type="button" data-a="bio-off">얼굴·지문 열기 끄기</button>':can?'<button class="btn-p" type="button" data-a="bio-on">얼굴·지문으로 열기 켜기</button>':''}<button class="btn-o" type="button" data-a="sync-lock">지금 잠그기</button><button class="btn-o" type="button" data-a="sync-out">이 기기에서 나가기</button></div>
+      <p class="help">화면을 열 때마다 확인합니다. "이 기기에서 나가기"는 잠그면서 이 기기에 남은 사본과 얼굴·지문·알림 등록도 지웁니다.</p></section>`;
+}
 V.set=()=>`<div class="main set">
     <header class="vh"><div class="vh-r"><h1>설정</h1></div></header>
-    <section class="sec" style="margin-top:0"><div class="sec-h"><h2>분류</h2><span class="n">${S.cats.length}개</span></div>
+    ${ntSec()}${lockSec()}
+    <section class="sec"><div class="sec-h"><h2>분류</h2><span class="n">${S.cats.length}개</span></div>
       ${S.cats.map(c=>`<div class="set-row"><select data-a="cat-col" data-id="${c.id}" aria-label="${esc(c.n)} 색">${Object.keys(PAL).map(p=>`<option value="${p}"${p===c.col?' selected':''}>${PAL[p]}</option>`).join('')}</select><input type="text" value="${esc(c.n)}" data-a="cat-name" data-id="${c.id}" aria-label="분류 이름"><button class="btn-d" type="button" data-a="cat-del" data-id="${c.id}">지우기</button></div>`).join('')}
       <form class="addrow" data-f="cat-add" novalidate><label class="sr" for="cat-add">새 분류</label><input id="cat-add" type="text" placeholder="새 분류 이름" autocomplete="off"><button class="btn-o" type="submit">추가</button></form>
       <p class="help">분류를 지우면 그 분류에 보관했던 자료는 정리 대기로 돌아갑니다.</p></section>
     <section class="sec"><div class="sec-h"><h2>저장과 백업</h2></div>
       ${SY.on&&SY.key?`<p class="note">고치는 즉시 내 구글 시트에 저장되고, 같은 주소를 여는 다른 기기에서도 같은 내용이 보입니다. 다른 기기에서 고친 내용은 이 화면으로 돌아올 때와 1분마다 불러옵니다.</p>
-      <div class="btns" style="margin-bottom:.75rem"><button class="btn-o" type="button" data-a="sync-now">지금 다시 불러오기</button><button class="btn-o" type="button" data-a="sync-lock">지금 잠그기</button><button class="btn-o" type="button" data-a="sync-out">이 기기에서 나가기</button></div>
-      <p class="help" style="margin:-.25rem 0 1rem">비밀번호는 화면을 열 때마다 다시 묻습니다. "이 기기에서 나가기"는 잠그면서 이 기기에 남은 사본도 지웁니다.</p>`:'<p class="note">지금은 이 기기의 이 브라우저에만 저장됩니다. 다른 기기에서는 보이지 않고, 브라우저 기록을 지우면 함께 지워집니다. 가끔 백업 파일을 받아 두세요.</p>'}
+      <div class="btns" style="margin-bottom:.75rem"><button class="btn-o" type="button" data-a="sync-now">지금 다시 불러오기</button></div>`:'<p class="note">지금은 이 기기의 이 브라우저에만 저장됩니다. 다른 기기에서는 보이지 않고, 브라우저 기록을 지우면 함께 지워집니다. 가끔 백업 파일을 받아 두세요.</p>'}
       <div class="btns"><button class="btn-o" type="button" data-a="export">백업 파일 받기</button><label class="btn-o" for="imp">백업 불러오기</label><input class="sr" id="imp" type="file" accept="application/json,.json" data-a="import"></div></section>
     <section class="sec"><div class="sec-h"><h2>예시와 초기화</h2></div>
       <div class="btns" style="margin-top:1rem">${S.demo?'<button class="btn-o" type="button" data-a="demo-del">예시 지우기</button>':'<button class="btn-o" type="button" data-a="demo-add">예시 넣어 보기</button>'}<button class="btn-d" type="button" data-a="wipe" style="margin-left:0">모두 지우기</button></div></section>
@@ -1311,7 +1422,7 @@ function route(){
   else{if(!v)U.view='today';if(!v||!$('#view').firstChild)render()}
 }
 function go(v){
-  if(U.view!==v){U.view=v;U.tdEdit=null;U.tdDue=null;U.pl.pick=U.pl.at=null;if(U.f.ev.id)U.f.ev=evBlank(U.sel);try{history.pushState(null,'','#'+v)}catch(e){}window.scrollTo(0,0)}
+  if(U.view!==v){U.view=v;U.tdEdit=null;U.tdDue=null;U.pl.pick=U.pl.at=null;if(U.f.ev.id)U.f.ev=evBlank(U.sel);try{history.pushState(null,'','#'+v)}catch(e){}window.scrollTo(0,0);if(v==='set')ntRefresh()}
   render();
 }
 
@@ -1397,11 +1508,73 @@ const A={
   'cat-del'(el){const c=cat(el.dataset.id);if(!c)return;commit(`"${c.n}" 분류를 지웠습니다`,()=>{S.cats=S.cats.filter(x=>x.id!==c.id);['ev','td','it'].forEach(k=>S[k].forEach(o=>{if(o.c===c.id){o.c='';if(k==='it')o.f=''}}));S.fold=S.fold.filter(y=>y.c!==c.id);if(U.fc===c.id)U.fc='all'})},
   'demo-add'(){commit('예시를 넣었습니다',seed)},
   'demo-del'(){commit('예시를 지웠습니다',unseed)},
+  'cal-fold'(){U.calOpen=!U.calOpen;render()},
+  /* 얼굴·지문으로 열기 */
+  'gate-pw'(){$('#gate-bio').hidden=true;$('#gate-pw').hidden=false;$('#gk').focus()},
+  async 'bio-open'(){
+    const rec=bioRec(),b=$('#bio-btn'),er=$('#bio-err');if(!rec||b.disabled)return;
+    const fail=m=>{er.textContent=m;er.hidden=false};
+    er.hidden=true;b.disabled=true;
+    try{
+      if(!BIO.ch||Date.now()-BIO.at>540000){b.textContent='준비하는 중';const c=await api({action:'bio-ch'});if(!c.ok)throw new Error('net');BIO.ch=c.ch;BIO.at=Date.now()}
+      const ch=BIO.ch;BIO.ch='';b.textContent='확인하는 중';
+      const as=await navigator.credentials.get({publicKey:{challenge:unb(ch),rpId:location.hostname,allowCredentials:[{type:'public-key',id:unb(rec.id)}],userVerification:'required',timeout:60000}});
+      const r=await api({action:'bio-in',id:rec.id,cd:b64u(as.response.clientDataJSON),ad:b64u(as.response.authenticatorData),sig:b64u(as.response.signature)});
+      if(r.ok){SY.key=r.tok;SY.tk=true;enter(r)}
+      else if(r.error==='bio'){try{localStorage.setItem(KBIO,JSON.stringify({id:rec.id,bad:true}))}catch(e){}lock('이 기기의 얼굴·지문 등록이 풀렸습니다. 비밀번호로 연 뒤 설정에서 다시 켜 주세요.',true)}
+      else fail('지금은 확인할 수 없습니다. 잠시 뒤에 다시 눌러 주세요.');
+    }catch(e){fail(e&&(e.name==='NotAllowedError'||e.name==='AbortError')?'확인하지 못했습니다. 다시 눌러 주세요.':'연결하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.')}
+    b.disabled=false;b.textContent='얼굴·지문으로 열기';
+    if(!SY.key)bioPrep();
+  },
+  async 'bio-on'(el){
+    if(!window.PublicKeyCredential||!navigator.credentials){toast('이 브라우저는 얼굴·지문 열기를 지원하지 않습니다');return}
+    el.disabled=true;
+    try{
+      const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+      const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'하루판',id:location.hostname},user:{id:rnd(16),name:'하루판',displayName:'하루판'},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}});
+      const pub=bioPub(c.response),id=b64u(c.rawId);if(!pub)throw new Error('pub');
+      const r=await api(Object.assign({action:'bio-reg',id,pub:b64u(pub),ua:devName()},cred()));if(!r.ok)throw new Error(r.error);
+      localStorage.setItem(KBIO,JSON.stringify({id}));render();toast('다음부터 이 기기는 얼굴·지문으로 엽니다');
+    }catch(e){el.disabled=false;toast(e&&(e.name==='NotAllowedError'||e.name==='AbortError')?'켜지 않았습니다. 다시 눌러 주세요':'얼굴·지문 열기를 켜지 못했습니다. 기기의 화면 잠금(얼굴·지문·암호)이 켜져 있는지 확인해 주세요')}
+  },
+  'bio-off'(){const rec=bioRec();try{localStorage.removeItem(KBIO)}catch(e){}if(rec&&SY.key)api(Object.assign({action:'bio-del',id:rec.id},cred())).catch(()=>{});render();toast('이 기기의 얼굴·지문 열기를 껐습니다. 다음부터 비밀번호를 묻습니다')},
+  /* 알림 */
+  'nt-set'(el){const k=el.dataset.k,c=ntCfg();c[k]=k==='brief'||k==='prev'?el.value:+el.value;S.cfg=Object.assign({},S.cfg,{nt:c});save();render();toast('알림 시점을 바꿨습니다')},
+  async 'nt-on'(){
+    if(NT.busy||!NT.sup)return;NT.busy=true;
+    try{
+      const perm=await Notification.requestPermission();NT.perm=perm;
+      if(perm!=='granted'){NT.busy=false;render();toast(perm==='denied'?'이 기기에서 알림이 막혀 있습니다. 기기 설정에서 하루판 알림을 허용해 주세요':'알림을 허용하지 않아 켜지 않았습니다');return}
+      const reg=await swReady(),k=await api(Object.assign({action:'push-key'},cred()));if(!k.ok)throw new Error(k.error);
+      let sub=await reg.pushManager.getSubscription();
+      if(sub&&sub.options&&sub.options.applicationServerKey&&b64u(sub.options.applicationServerKey)!==k.pub){await sub.unsubscribe();sub=null}
+      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:unb(k.pub)});
+      const r=await api(Object.assign({action:'sub',sub:sub.toJSON(),ua:devName()},cred()));if(!r.ok)throw new Error(r.error);
+      NT.end=sub.endpoint;NT.busy=false;render();toast('이 기기에서 알림을 받습니다',{alt:{label:'시험 알림 보내기',fn(){A['nt-test']()}}});
+    }catch(e){NT.busy=false;toast('알림을 켜지 못했습니다. 잠시 뒤에 다시 눌러 주세요')}
+  },
+  async 'nt-off'(){
+    if(NT.busy||!NT.sup)return;NT.busy=true;
+    try{const reg=await swReady(),sub=await reg.pushManager.getSubscription();if(sub){const end=sub.endpoint;await sub.unsubscribe();if(SY.key)api(Object.assign({action:'unsub',endpoint:end},cred())).catch(()=>{})}NT.end='';render();toast('이 기기의 알림을 껐습니다')}
+    catch(e){toast('알림을 끄지 못했습니다. 잠시 뒤에 다시 눌러 주세요')}
+    NT.busy=false;
+  },
+  async 'nt-test'(){
+    if(NT.busy||!NT.sup)return;NT.busy=true;
+    try{const reg=await swReady(),sub=await reg.pushManager.getSubscription();if(!sub){NT.end='';render();throw new Error('sub')}
+      const r=await api(Object.assign({action:'push-test',sub:sub.toJSON()},cred()));
+      toast(r.ok?'시험 알림을 보냈습니다. 몇 초 안에 도착합니다':r.code===404||r.code===410?'이 기기의 알림 등록이 풀렸습니다. 껐다가 다시 켜 주세요':'시험 알림을 보내지 못했습니다. 잠시 뒤에 다시 눌러 주세요')}
+    catch(e){toast('시험 알림을 보내지 못했습니다. 잠시 뒤에 다시 눌러 주세요')}
+    NT.busy=false;
+  },
   'sync-now'(){pull()},
-  'sync-lock'(){flush();lock('잠갔습니다. 다시 쓰려면 비밀번호를 넣어 주세요.')},
+  'sync-lock'(){flush();lock(bioRec()?'':'잠갔습니다. 다시 쓰려면 비밀번호를 넣어 주세요.')},
   'sync-out'(){
     if(SY.dirty){toast('아직 구글 시트에 저장하지 못한 내용이 있습니다. 저장된 뒤에 다시 눌러 주세요');pull();return}
-    S=blank();try{[KEY,KB,KM].forEach(k=>localStorage.removeItem(k))}catch(e){}
+    const rec=bioRec();if(rec)api(Object.assign({action:'bio-del',id:rec.id},cred())).catch(()=>{});
+    if(NT.sup&&NT.end){api(Object.assign({action:'unsub',endpoint:NT.end},cred())).catch(()=>{});NT.end='';navigator.serviceWorker.getRegistration().then(r=>r&&r.pushManager.getSubscription()).then(s=>s&&s.unsubscribe()).catch(()=>{})}
+    S=blank();try{[KEY,KB,KM,KBIO].forEach(k=>localStorage.removeItem(k))}catch(e){}
     SY.at=0;SY.dirty=false;U.itSel=null;U.tdEdit=null;U.f.ev=evBlank(U.sel);U.f.rt=rtBlank();
     lock('이 기기에서 나갔습니다. 다시 쓰려면 비밀번호를 넣어 주세요.');
   },
@@ -1431,7 +1604,7 @@ const F={
     b.disabled=true;b.textContent='확인하는 중';er.hidden=true;
     try{
       const r=await api({action:'get',name:'main',key:k});
-      if(r.ok){SY.key=k;takeRemote(r);SY.err='';document.body.classList.remove('locked');$('#gate').hidden=true;el.value='';render();if(SY.dirty)push();else status()}
+      if(r.ok){SY.key=k;SY.tk=false;enter(r)}
       else{er.textContent=r.error==='auth'?'비밀번호가 맞지 않습니다.':'지금은 확인할 수 없습니다. 잠시 뒤에 다시 눌러 주세요.';er.hidden=false;el.select()}
     }catch(e){er.textContent='연결하지 못했습니다. 인터넷을 확인하고 다시 눌러 주세요.';er.hidden=false}
     b.disabled=false;b.textContent='들어가기';
@@ -1583,12 +1756,19 @@ setInterval(()=>{
   if(today()!==U.day&&U.sel===U.day){U.sel=today();U.cur=U.sel.slice(0,7)}
   render();
 },20000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();else pull()});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){U.hid=Date.now();flush();return}
+  /* 얼굴·지문 열기를 켠 기기는 3분 넘게 다른 데 있다가 돌아오면 다시 확인한다. */
+  if(SY.key&&bioRec()&&U.hid&&Date.now()-U.hid>RELOCK){lock();return}
+  if(SY.on&&!SY.key&&!$('#gate-bio').hidden)bioPrep();
+  pull();
+});
 window.addEventListener('focus',()=>pull());
 window.addEventListener('online',()=>pull());
 setInterval(()=>{if(!document.hidden)pull()},60000);
 if(QS.has('demo')&&!S.ev.length&&!S.td.length&&!S.rt.length&&!S.it.length){seed();save()}
 route();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||window.__sw))navigator.serviceWorker.register('sw.js').then(()=>ntRefresh()).catch(()=>{});
 if(SY.on){if(SY.key)pull();else lock()}
 })();
 </script>
