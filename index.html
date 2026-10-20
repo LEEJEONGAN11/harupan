@@ -17,6 +17,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box}
 :root{
+  --hr:3.75rem;   /* 시간표 한 시간 칸 높이 */
   color-scheme:light;
   --head:oklch(0.33 0.065 165);
   --head-2:oklch(0.41 0.075 165);
@@ -222,11 +223,11 @@ h2{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
 .pl-hd{display:grid;grid-template-columns:3rem 38fr 62fr;font-size:.8125rem;font-weight:700;color:var(--ink-2);padding:0 0 .375rem;border-bottom:2px solid var(--ink)}
 .pl-hd span{padding-left:.5rem}
 .pl{display:grid;grid-template-columns:3rem minmax(0,1fr)}
-.pl-t span{display:block;height:3rem;font-size:.8125rem;font-weight:600;color:var(--ink-2);padding-top:.125rem}
-.pl-c{position:relative;height:calc(18 * 3rem);border-left:1px solid var(--line);cursor:cell;background-image:repeating-linear-gradient(to bottom,var(--line) 0,var(--line) 1px,transparent 1px,transparent 3rem)}
+.pl-t span{display:block;height:var(--hr);font-size:.8125rem;font-weight:600;color:var(--ink-2);padding-top:.125rem}
+.pl-c{position:relative;height:calc(18 * var(--hr));border-left:1px solid var(--line);cursor:cell;background-image:repeating-linear-gradient(to bottom,var(--line) 0,var(--line) 1px,transparent 1px,transparent var(--hr))}
 .pl-c::before{content:"";position:absolute;top:0;bottom:0;left:38%;border-left:1px dashed var(--line-2)}
 .pl-c.drop{background-color:var(--go-bg)}
-.pl-e{position:absolute;top:calc((var(--s) - 6) * 3rem + 1px);height:calc((var(--e) - var(--s)) * 3rem - 2px);min-height:1.5rem;padding:.1875rem .5rem;border-radius:6px;overflow:hidden;font-size:.875rem;line-height:1.35;text-align:left}
+.pl-e{position:absolute;top:calc((var(--s) - 6) * var(--hr) + 1px);height:calc((var(--e) - var(--s)) * var(--hr) - 2px);min-height:1.5rem;padding:.1875rem .5rem;border-radius:6px;overflow:hidden;font-size:.875rem;line-height:1.35;text-align:left}
 .pl-e b{font-weight:800;margin-right:.375rem;font-variant-numeric:tabular-nums}
 .pl-e.ev,.pl-e.rt{left:3px;width:calc(38% - 6px);pointer-events:none}
 .pl-e.ev{background:color-mix(in oklch,var(--c) 16%,white);border:1px solid color-mix(in oklch,var(--c) 45%,white);color:color-mix(in oklch,var(--c) 62%,black);font-weight:600}
@@ -235,11 +236,26 @@ h2{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
 .pl-e.tk > div{flex:1;min-width:0}
 /* 한 시간이 안 되는 칸은 한 줄로 두고 넘치면 말줄임 */
 .pl-e.one,.pl-e.tk.one > div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 같은 시간에 묶인 할 일: 한 칸 안에 한 줄씩 */
+.pl-e.tk.grp{display:block;padding:3px .375rem;cursor:default}
+.pl-gr{display:flex;align-items:center;gap:.375rem;height:17px;font-size:.8125rem;line-height:17px;white-space:nowrap;border-radius:4px;cursor:grab}
+.pl-gr input{flex:none;width:.875rem;height:.875rem;margin:0;accent-color:var(--head);cursor:pointer}
+.pl-gr span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pl-gr b{font-weight:800;margin-right:.375rem;font-variant-numeric:tabular-nums}
+.pl-gr.sel{background:var(--go-bg)}
+.pl-gr.done span{text-decoration:line-through;color:var(--ink-3)}
+.pl-gr.more{padding-left:1.25rem;font-weight:700;color:var(--go);cursor:pointer}
+.pl-e.tk.grp.ex{height:auto;min-height:calc((var(--e) - var(--s)) * var(--hr) - 2px);z-index:3;box-shadow:0 8px 22px oklch(0.2 0.02 165 / .2)}
+/* 시간표 위 "적어서 넣기" 줄 */
+.pl-type{display:flex;align-items:center;gap:.5rem;margin:.25rem 0 0}
+.pl-type input{flex:1 1 0;width:0;min-width:0;height:2.5rem;padding:0 .75rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;color:var(--ink)}
+.pl-type .btn-p{flex:none}
+.pl-tyh{margin:.375rem 0 1rem}
 .pl-e.tk input{width:1.125rem;height:1.125rem;margin:.0625rem 0 0;accent-color:var(--head);flex:none;cursor:pointer}
 .pl-e.tk.sel{background:var(--go-bg);box-shadow:0 0 0 2px var(--head)}
 .pl-e.tk.done{border-color:var(--line-2);color:var(--ink-3)}
 .pl-e.tk.done span{text-decoration:line-through}
-.pl-now{position:absolute;left:0;right:0;top:calc((var(--s) - 6) * 3rem);height:2px;background:var(--red);pointer-events:none;z-index:2}
+.pl-now{position:absolute;left:0;right:0;top:calc((var(--s) - 6) * var(--hr));height:2px;background:var(--red);pointer-events:none;z-index:2}
 .pl-src{cursor:pointer;flex-wrap:wrap;border-radius:6px}
 .pl-src .t{display:flex;align-items:flex-start;gap:.5rem}
 .pl-src .dz{margin-top:.125rem}
@@ -247,7 +263,7 @@ h2{font-size:1.125rem;font-weight:800;letter-spacing:-.01em}
 .hrs{flex-basis:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.25rem;margin-top:.5rem}
 .hrs button{height:2.125rem;border:1px solid var(--line-2);border-radius:6px;background:#fff;font-size:.875rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:background-color .16s}
 .hrs button:hover{background:var(--panel-2);color:var(--ink)}
-.pl-mark{position:absolute;left:calc(38% + 3px);right:3px;top:calc((var(--s) - 6) * 3rem + 1px);height:calc((var(--e) - var(--s)) * 3rem - 2px);border-radius:6px;background:var(--go-bg);box-shadow:inset 0 0 0 2px var(--head);pointer-events:none}
+.pl-mark{position:absolute;left:calc(38% + 3px);right:3px;top:calc((var(--s) - 6) * var(--hr) + 1px);height:calc((var(--e) - var(--s)) * var(--hr) - 2px);border-radius:6px;background:var(--go-bg);box-shadow:inset 0 0 0 2px var(--head);pointer-events:none}
 .pl-c{-webkit-user-select:none;user-select:none}
 /* 아이폰 알람처럼 시와 분을 따로 굴려서 고르는 휠. 가운데 줄에 온 숫자가 고른 값이다. */
 .pl-rng{display:flex;align-items:flex-end;gap:.5rem}
@@ -862,7 +878,7 @@ function flush(){
 const evBlank=d=>({id:null,n:'',d,timed:true,t:'09:00',e:'',c:'',g:'',r:''});
 const rtBlank=()=>({id:null,n:'',timed:false,t:'07:00',w:[1,1,1,1,1,1,1],mode:'days',k:3});
 const T0=today();
-const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tg:'all',ta:{n:'',due:'',g:'w'},pl:{pick:null,drag:null,at:null,to:null,g:'w',chk:[],nw:'',dragEnd:0},calOpen:false,hid:0,tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
+const U={view:'today',sel:T0,cur:T0.slice(0,7),mode:'month',tg:'all',ta:{n:'',due:'',g:'w'},pl:{pick:null,drag:null,at:null,to:null,g:'w',chk:[],nw:'',ty:'',ex:null,dragEnd:0},calOpen:false,hid:0,tdEdit:null,itSel:null,fk:'all',fc:'all',ff:'all',fNew:false,fRen:false,d:null,fq:'',rv:wk0(add(T0,-7)),f:{ev:evBlank(T0),rt:rtBlank()},day:T0,min:-1};
 
 const cat=id=>S.cats.find(c=>c.id===id);
 const kc=id=>{const c=cat(id);return c?'k-'+c.col:'k-none'};
@@ -1199,25 +1215,30 @@ V.plan=()=>{
   const clampS=x=>Math.max(H0,Math.min(H1-.5,x));
   let blocks=evs.filter(e=>e.t).map(e=>{const s=clampS(hm(e.t)),en=Math.min(H1,Math.max(s+.5,e.e?hm(e.e):s+1));return `<div class="pl-e ev ${kg(e)}${en-s<.95?' one':''}" style="--s:${s};--e:${en}"><b>${e.t}</b>${esc(e.n)}</div>`}).join('');
   blocks+=rts.map(r=>{const s=clampS(hm(r.t));return `<div class="pl-e rt one" style="--s:${s};--e:${s+.5}"><b>${r.t}</b>${esc(r.n)}</div>`}).join('');
-  blocks+=placed.map((t,i)=>{const s=clampS(hm(t.tm)),en=Math.min(H1,s+Math.max(30,t.tl||60)/60),dep=placed.slice(0,i).filter(o=>hm(o.tm)+Math.max(30,o.tl||60)/60>hm(t.tm)).length;
-    return `<div class="pl-e tk${en-s<.95?' one':''}${U.pl.pick===t.id?' sel':''}${t.done?' done':''}" draggable="true" data-a="pl-blk" data-id="${t.id}" style="--s:${s};--e:${en};--in:${dep*1.25}rem"><input type="checkbox" data-a="td-toggle" data-id="${t.id}"${t.done?' checked':''} aria-label="${esc(t.n)} 끝냄"><div><b>${t.tm}</b><span>${esc(t.n)}</span></div></div>`}).join('');
+  /* 같은 시간(시작과 길이가 같음)에 넣은 할 일은 한 칸에 묶어 한 줄씩 보인다. 칸에 다 안 들어가면 "외 n개". */
+  const grp=[];placed.forEach(t=>{const k=t.tm+'|'+(t.tl||60),o=grp.find(x=>x.k===k);if(o)o.ts.push(t);else grp.push({k,tm:t.tm,tl:t.tl||60,ts:[t]})});
+  blocks+=grp.map((G,i)=>{const s=clampS(hm(G.tm)),en=Math.min(H1,s+Math.max(30,G.tl)/60),dep=grp.slice(0,i).filter(o=>hm(o.tm)+Math.max(30,o.tl)/60>hm(G.tm)).length,st=`--s:${s};--e:${en};--in:${dep*1.25}rem`;
+    const chk=t=>`<input type="checkbox" data-a="td-toggle" data-id="${t.id}"${t.done?' checked':''} aria-label="${esc(t.n)} 끝냄">`;
+    if(G.ts.length===1){const t=G.ts[0];return `<div class="pl-e tk${en-s<.7?' one':''}${U.pl.pick===t.id?' sel':''}${t.done?' done':''}" draggable="true" data-a="pl-blk" data-id="${t.id}" style="${st}">${chk(t)}<div><b>${t.tm}</b><span>${esc(t.n)}</span></div></div>`}
+    const n=G.ts.length,ex=U.pl.ex===G.k,cap=Math.max(1,Math.floor(((en-s)*60-8)/17)),shown=ex||n<=cap?G.ts:G.ts.slice(0,cap-1);
+    return `<div class="pl-e tk grp${ex?' ex':''}" data-a="pl-nop" style="${st}">${shown.map((t,j)=>`<div class="pl-gr${U.pl.pick===t.id?' sel':''}${t.done?' done':''}" draggable="true" data-a="pl-blk" data-id="${t.id}">${chk(t)}<span>${j?'':`<b>${G.tm}</b>`}${esc(t.n)}</span></div>`).join('')}${n>shown.length?`<div class="pl-gr more" data-a="pl-ex" data-v="${G.k}">외 ${n-shown.length}개</div>`:ex&&n>cap?`<div class="pl-gr more" data-a="pl-ex" data-v="">접기</div>`:''}</div>`}).join('');
   if(isT&&nowH()>=H0)blocks+=`<i class="pl-now" style="--s:${nowH()}"></i>`;
   /* 칸 옆에 뜨는 작은 창(폰은 아래에서 올라오는 판): 빈 칸을 누르거나(PC는 끌어서) 시간 범위를 잡고, 업무/개인에서 여러 개를 고르거나
-     새로 적어서 한 번에 넣는다. 여러 개면 그 범위를 똑같이 나눠 차례로 놓는다. 놓인 할 일을 누르면 길이를 바꾸거나 뺀다. */
-  const popAt=(s,e)=>s>=14?`bottom:calc(${H1-s} * 3rem + 4px)`:`top:calc(${e-H0} * 3rem + 4px)`;
+     적어서 한 번에 넣는다. 고른 것은 모두 그 범위에 같이 들어간다. 놓인 할 일을 누르면 시간·길이를 바꾸거나 뺀다. */
+  const popAt=(s,e)=>s>=14?`bottom:calc(${H1-s} * var(--hr) + 4px)`:`top:calc(${e-H0} * var(--hr) + 4px)`;
   const dot=t=>U.tg==='all'?`<i class="gd ${kg(t)}"></i>`:'';
   const at=!pick&&U.pl.at;
   if(at){
     const s=hm(at),to=U.pl.to&&hm(U.pl.to)>s?U.pl.to:hmAdd(at,60),e=hm(to),g=U.pl.g;
     const cand=tdSorted().filter(t=>!t.done&&!(t.due===d&&t.tm)),inGp=k=>cand.filter(t=>tg(t)===k);
-    const n=U.pl.chk.length+(U.pl.nw.trim()?1:0),list=inGp(g);
+    const n=U.pl.chk.length+plTyped(U.pl.nw),list=inGp(g);
     blocks+=`<i class="pl-mark" style="--s:${s};--e:${e}"></i><form class="pl-pop" id="pl-pop" data-a="pl-nop" data-f="pl-go" novalidate style="${popAt(s,e)}">
     <div class="pl-rng">${wheel('from',at,H0,H1-1,'시작')}<span>~</span>${wheel('to',to,H0,H1,'끝')}<b>${lenTxt(toMin(to)-toMin(at))}</b></div>
     <div class="seg" role="group" aria-label="고를 구분">${['w','p'].map(k=>`<button type="button" data-a="pl-g" data-v="${k}" aria-pressed="${g===k}">${GN[k]}<span class="n">${inGp(k).length}</span></button>`).join('')}</div>
     ${list.length?`<ul>${list.map(t=>`<li><label class="pl-ck"><input type="checkbox" data-a="pl-chk" data-id="${t.id}"${U.pl.chk.includes(t.id)?' checked':''}><span>${esc(t.n)}</span>${t.due?`<small>${t.due<T?`${diff(T,t.due)}일 지남`:t.tm?`${dueLabel(t.due)} ${t.tm}`:dueLabel(t.due)+'까지'}</small>`:''}</label></li>`).join('')}</ul>`:`<p class="help">${GN[g]} 할 일 중 아직 시간을 안 정한 것이 없습니다.</p>`}
-    <div class="pl-nw"><label class="sr" for="pl-new">새로 적어 넣기</label><input id="pl-new" type="text" placeholder="할 일에 없는 것 적기 (${GN[g]})" autocomplete="off" value="${esc(U.pl.nw)}"></div>
+    <div class="pl-nw"><label class="sr" for="pl-new">적어서 넣기</label><input id="pl-new" type="text" placeholder="적어서 넣기 (예: 철근 검측, 석고보드)" autocomplete="off" value="${esc(U.pl.nw)}"></div>
     <div class="btns"><button class="btn-p" type="submit" id="pl-go">${n?`${n}개 넣기`:'넣기'}</button><button class="btn-o" type="button" data-a="pl-atx">닫기</button></div>
-    <p class="help">여러 개를 고르면 ${at}~${to} 사이를 나눠서 차례로 넣습니다.</p></form>`}
+    <p class="help">고른 것과 적은 것은 모두 ${at}~${to}에 같이 들어갑니다. 쉼표로 여러 개, 할 일에 있는 이름이면 그걸 가져옵니다.</p></form>`}
   if(pickOn){const s=clampS(hm(pick.tm)),en=Math.min(H1,s+Math.max(30,pick.tl||60)/60);
     blocks+=`<div class="pl-pop" id="pl-pop" data-a="pl-nop" style="${popAt(s,en)}"><h3>${esc(pick.n)}</h3>
     <div class="pl-rng">${wheel('bs',pick.tm,H0,H1-1,'시작')}<span>~</span>${wheel('be',hmAdd(pick.tm,pick.tl||60),H0,H1,'끝')}<b>${lenTxt(pick.tl||60)}</b></div>
@@ -1232,6 +1253,12 @@ V.plan=()=>{
     <header class="vh"><div class="vh-r"><h1>${isT?'오늘 시간표':`${mdw(d)} 시간표`}</h1>
       <div class="ctl">${gSeg('시간표에 보일 구분')}<button class="icb txt" type="button" data-a="cal-today">오늘</button><button class="icb" type="button" data-a="pl-prev" aria-label="전날">${ico('cl','')}</button><button class="icb" type="button" data-a="pl-next" aria-label="다음 날">${ico('cr','')}</button></div></div></header>
     ${day?`<p class="pl-day">${day}</p>`:''}
+    <form class="pl-type" data-f="pl-type" novalidate autocomplete="off">
+      <div class="seg" role="group" aria-label="새로 만들 할 일 구분">${['w','p'].map(k=>`<button type="button" data-a="pl-g" data-v="${k}" aria-pressed="${U.pl.g===k}">${GN[k]}</button>`).join('')}</div>
+      <label class="sr" for="pl-type">적어서 넣기</label><input id="pl-type" type="text" placeholder="9-10 철골 검측, 철근 검측 / 13:30 회의" value="${esc(U.pl.ty)}" enterkeyhint="done">
+      <button class="btn-p" type="submit">넣기</button>
+    </form>
+    <p class="help pl-tyh">시간을 앞에 적고 여러 개는 쉼표로 나눕니다. 할 일에 있는 이름이면 그걸 가져옵니다.</p>
   </div>
   <div class="t-under">
     <div class="pl-hd"><span></span><span>일정 · 루틴</span><span>할 일</span></div>
@@ -1495,7 +1522,7 @@ function route(){
   else{if(!v)U.view='today';if(!v||!$('#view').firstChild)render()}
 }
 function go(v){
-  if(U.view!==v){U.view=v;U.tdEdit=null;U.tdDue=null;U.pl.pick=U.pl.at=null;if(U.f.ev.id)U.f.ev=evBlank(U.sel);try{history.pushState(null,'','#'+v)}catch(e){}window.scrollTo(0,0);if(v==='set')ntRefresh()}
+  if(U.view!==v){U.view=v;U.tdEdit=null;U.tdDue=null;U.pl.pick=U.pl.at=U.pl.ex=null;if(U.f.ev.id)U.f.ev=evBlank(U.sel);try{history.pushState(null,'','#'+v)}catch(e){}window.scrollTo(0,0);if(v==='set')ntRefresh()}
   render();
 }
 
@@ -1514,20 +1541,78 @@ function plOpen(from,to){
   /* 폰은 창이 아래에서 올라오므로, 잡은 칸이 창에 가리면 위로 올려 보이게 한다. */
   if(window.matchMedia('(max-width:760px)').matches){const m=$('.pl-mark'),p=$('#pl-pop');if(m&&p){const r=m.getBoundingClientRect(),top=p.getBoundingClientRect().top;if(r.bottom>top-8||r.top<90)window.scrollBy(0,r.top-96)}}
 }
-function plCount(){const b=$('#pl-go');if(!b)return;const n=U.pl.chk.length+(U.pl.nw.trim()?1:0);b.textContent=n?`${n}개 넣기`:'넣기'}
-/* 고른 것(누른 순서대로)과 새로 적은 것을 범위 안에 차례로 놓는다. 하나면 범위 전체, 여럿이면 똑같이 나눈다(5분 단위). */
+function plCount(){const b=$('#pl-go');if(!b)return;const n=U.pl.chk.length+plTyped(U.pl.nw);b.textContent=n?`${n}개 넣기`:'넣기'}
+/* ---------- 적어서 넣기 ----------
+   "9-10 철골 검측, 철근 검측 / 13:30 회의"처럼 적는다. 줄바꿈·";"·" / "로 나눈 덩어리마다 앞에 시간(또는 시간 범위)을 적고,
+   이름은 쉼표로 여러 개. 시간을 안 적은 덩어리는 앞 덩어리의 시간(고르는 창에서는 잡은 범위)을 쓴다.
+   끝을 안 적으면 1시간. 오전·오후를 안 적은 1~5시는 오후로 읽는다. */
+function plTime(s){
+  const m=s.match(/^\s*(오전|오후)?\s*(\d{1,2})(?:\s*(?::|시)\s*(\d{1,2}|반)?\s*(?:분)?|(?=\s|-|~|부터|$))/);
+  if(!m)return null;
+  let h=+m[2];const mi=m[3]==='반'?30:m[3]?+m[3]:0;
+  if(h>24||mi>59)return null;
+  if(m[1]==='오후'&&h<12)h+=12;else if(m[1]==='오전'&&h===12)h=0;else if(!m[1]&&h>=1&&h<=5)h+=12;
+  return {min:Math.min(24*60,h*60+mi),rest:s.slice(m[0].length)};
+}
+function plParse(text,def){
+  /* 줄바꿈·";"·" / "·쉼표로 나눈 조각마다 앞에 시간이 있으면 그때부터 그 시간, 없으면 앞 조각의 시간을 쓴다. 시간만 적은 조각은 다음 조각들의 시간이 된다. */
+  const parts=String(text).split(/\n|;| \/ |[,，、]/).map(x=>x.trim()).filter(Boolean),out=[];let last=def||null;
+  for(const sg of parts){
+    const a=plTime(sg);let range,rest;
+    if(a){
+      if(a.min>=24*60)return {err:`"${sg}"의 시간을 알아볼 수 없습니다`};
+      const r2=a.rest.match(/^\s*(?:-|~|부터)\s*/),b=r2?plTime(a.rest.slice(r2[0].length)):null;
+      if(b&&b.min>a.min){range=[a.min,b.min];rest=b.rest.replace(/^\s*까지/,'')}
+      else{range=[a.min,Math.min(24*60,a.min+60)];rest=r2&&!b?a.rest.slice(r2[0].length):a.rest}
+      if(/^에/.test(rest))rest=rest.replace(/^에(는)?\s*/,'');else rest=rest.replace(/^\s+에(는)?\s+/,' ');
+    }else if(last){range=last;rest=sg}
+    else return {err:'시간을 앞에 같이 적어 주세요. 예) 9-10 철골 검측'};
+    last=range;rest=rest.trim();if(!rest)continue;
+    const o=out[out.length-1];
+    if(o&&o.from===range[0]&&o.to===range[1])o.names.push(rest);else out.push({from:range[0],to:range[1],names:[rest]});
+  }
+  return out.length?{list:out}:{err:'넣을 일을 적어 주세요. 예) 9-10 철골 검측'};
+}
+/* 고르는 창에 적은 것이 몇 개인지(넣기 단추 글씨용). 시간을 못 읽어도 이름 수만 센다. */
+function plTyped(t){t=String(t||'').trim();if(!t)return 0;const p=plParse(t,[0,60]);return p.list?p.list.reduce((a,x)=>a+x.names.length,0):1}
+/* 적은 이름이 아직 시간을 안 정한 할 일 하나와만 맞으면 그 할 일을 쓴다(같은 이름이 있으면 그것, 아니면 이름 일부). */
+function plMatch(name,used,d){
+  const k=name.replace(/\s+/g,'').toLowerCase();if(k.length<2)return null;
+  const c=S.td.filter(t=>!t.done&&!used.has(t.id)&&!(t.due===d&&t.tm)),key=t=>t.n.replace(/\s+/g,'').toLowerCase();
+  const eq=c.filter(t=>key(t)===k);if(eq.length===1)return eq[0];
+  const sub=c.filter(t=>key(t).includes(k));return sub.length===1?sub[0]:null;
+}
+function plJobs(jobs,typed,d){
+  const used=new Set(jobs.map(j=>j.id));let got=0,made=0;
+  typed.forEach(sg=>sg.names.forEach(n=>{const m=plMatch(n,used,d);if(m){used.add(m.id);jobs.push({id:m.id,from:sg.from,to:sg.to});got++}else{jobs.push({n,from:sg.from,to:sg.to});made++}}));
+  return {jobs,got,made,typed:typed.length>0};
+}
+/* 넣기: 각 할 일을 적힌(또는 잡은) 시간 그대로 놓는다. 새 이름은 고른 구분(업무/개인)으로 할 일도 만든다. */
+function plCommit(r,d,g,o){
+  const J=r.jobs,f=J[0],same=J.every(j=>j.from===f.from&&j.to===f.to),nm=j=>j.n||(S.td.find(t=>t.id===j.id)||{}).n||'';
+  let msg=`${d===today()?'오늘':md(d)} ${same?`${hmS(f.from)}~${hmS(f.to)}에 `:''}${J.length===1?`"${nm(f)}"${josa(nm(f),'을','를')}`:`${J.length}개를`} 넣었습니다`;
+  if(r.typed&&r.got)msg+=r.made?` · 할 일에서 ${r.got}개 가져오고 ${r.made}개 새로 만듦`:` · 할 일에서 가져옴`;
+  commit(msg,()=>{J.forEach(j=>{
+    if(j.id){const t=S.td.find(x=>x.id===j.id);if(!t)return;t.due=d;t.tm=hmS(j.from);t.tl=j.to-j.from}
+    else S.td.push({id:uid(),n:j.n,c:'',g,due:d,done:'',at:today(),tm:hmS(j.from),tl:j.to-j.from});
+  })},o);
+}
 function plGo(){
   const d=U.sel,from=U.pl.at;if(!from)return;
-  const to=U.pl.to&&hm(U.pl.to)>hm(from)?U.pl.to:hmAdd(from,60);
-  const ids=U.pl.chk.filter(id=>S.td.some(t=>t.id===id)),nw=U.pl.nw.trim(),n=ids.length+(nw?1:0),g=U.pl.g;
-  if(!n){const i=$('#pl-new');if(i)i.focus();toast('넣을 할 일을 고르거나 적어 주세요');return}
-  const total=Math.round((hm(to)-hm(from))*60),len=n===1?total:Math.max(5,Math.floor(total/n/5)*5);
+  const to=U.pl.to&&toMin(U.pl.to)>toMin(from)?U.pl.to:hmAdd(from,60),def=[toMin(from),toMin(to)];
+  const ids=U.pl.chk.filter(id=>S.td.some(t=>t.id===id)),txt=U.pl.nw.trim();
+  let typed=[];
+  if(txt){const p=plParse(txt,def);if(p.err){toast(p.err);const i=$('#pl-new');if(i)i.focus();return}typed=p.list}
+  if(!ids.length&&!typed.length){const i=$('#pl-new');if(i)i.focus();toast('넣을 할 일을 고르거나 적어 주세요');return}
+  const r=plJobs(ids.map(id=>({id,from:def[0],to:def[1]})),typed,d),g=U.pl.g;
   U.pl.at=U.pl.to=null;U.pl.chk=[];U.pl.nw='';
-  commit(`${d===today()?'오늘':md(d)} ${from}~${to}에 ${n===1?(nw||(S.td.find(t=>t.id===ids[0])||{}).n):n+'개를'} 넣었습니다`,()=>{
-    let m=Math.round(hm(from)*60);
-    ids.forEach(id=>{const t=S.td.find(x=>x.id===id);t.due=d;t.tm=hmS(m);t.tl=len;m+=len});
-    if(nw)S.td.push({id:uid(),n:nw,c:'',g,due:d,done:'',at:today(),tm:hmS(m),tl:len});
-  });
+  plCommit(r,d,g);
+}
+function plType(){
+  const el=$('#pl-type'),txt=(el?el.value:U.pl.ty).trim();if(!txt){if(el)el.focus();return}
+  const p=plParse(txt,null);if(p.err){toast(p.err);if(el)el.focus();return}
+  const r=plJobs([],p.list,U.sel);U.pl.ty='';U.pl.pick=U.pl.at=null;
+  plCommit(r,U.sel,U.pl.g,{focus:'#pl-type'});
 }
 function plPlace(id,tm){
   const t=S.td.find(x=>x.id===id);if(!t)return;
@@ -1542,7 +1627,7 @@ const A={
   day(el){syncEv();U.sel=el.dataset.d;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
   'cal-prev'(){syncEv();if(U.view==='cal'&&U.mode==='week'){U.sel=add(U.sel,-7);U.cur=U.sel.slice(0,7);if(!U.f.ev.id)U.f.ev.d=U.sel}else U.cur=mAdd(U.cur,-1);render()},
   'cal-next'(){syncEv();if(U.view==='cal'&&U.mode==='week'){U.sel=add(U.sel,7);U.cur=U.sel.slice(0,7);if(!U.f.ev.id)U.f.ev.d=U.sel}else U.cur=mAdd(U.cur,1);render()},
-  'cal-today'(){syncEv();U.sel=today();U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
+  'cal-today'(){syncEv();U.sel=today();U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=U.pl.ex=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
   mode(el){syncEv();U.mode=el.dataset.v;if(U.mode==='week')U.cur=U.sel.slice(0,7);else U.cur=U.sel.slice(0,7);render()},
   slot(el,ev){syncEv();const r=el.getBoundingClientRect(),h=Math.min(H1-.5,H0+Math.floor((ev.clientY-r.top)/r.height*(H1-H0)*2)/2);
     U.sel=el.dataset.d;if(!U.f.ev.id){U.f.ev.d=U.sel;U.f.ev.timed=true;U.f.ev.t=`${pad(Math.floor(h))}:${h%1?'30':'00'}`;U.f.ev.e=''}
@@ -1561,16 +1646,17 @@ const A={
   'pl-pick'(el){U.pl.pick=U.pl.pick===el.dataset.id?null:el.dataset.id;U.pl.at=null;render()},
   'pl-blk'(el){U.pl.pick=U.pl.pick===el.dataset.id?null:el.dataset.id;U.pl.at=null;render()},
   'pl-at'(el){plPlace(el.dataset.id,el.dataset.v)},
-  'pl-slot'(el,ev){if(Date.now()-U.pl.dragEnd<400)return;const tm=slotTime(el,ev.clientY);if(U.pl.pick){plPlace(U.pl.pick,tm);return}if(U.pl.at===tm){A['pl-atx']();return}plOpen(tm,hmAdd(tm,60))},
+  'pl-slot'(el,ev){if(Date.now()-U.pl.dragEnd<400)return;if(U.pl.ex){U.pl.ex=null;render();return}const tm=slotTime(el,ev.clientY);if(U.pl.pick){plPlace(U.pl.pick,tm);return}if(U.pl.at===tm){A['pl-atx']();return}plOpen(tm,hmAdd(tm,60))},
   'pl-atx'(){U.pl.at=U.pl.to=null;U.pl.chk=[];U.pl.nw='';render()},
+  'pl-ex'(el){U.pl.ex=el.dataset.v||null;render()},
   'whl-pick'(el){const c=el.parentElement,g=el.closest('.whl');c.dataset.i=el.dataset.i;if(g){clearTimeout(WT[g.dataset.k]);whlSettle(g)}},
   'pl-g'(el){U.pl.g=el.dataset.v==='p'?'p':'w';render()},
   'pl-chk'(el){const id=el.dataset.id;U.pl.chk=el.checked?U.pl.chk.filter(x=>x!==id).concat(id):U.pl.chk.filter(x=>x!==id);plCount()},
   'pl-nop'(){},
   'pl-len'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;t.tl=+el.dataset.v||60;save();render()},
   'pl-out'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;U.pl.pick=null;commit(`시간표에서 뺐습니다 · ${t.n}`,()=>{t.tm=''})},
-  'pl-prev'(){U.sel=add(U.sel,-1);U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
-  'pl-next'(){U.sel=add(U.sel,1);U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
+  'pl-prev'(){U.sel=add(U.sel,-1);U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=U.pl.ex=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
+  'pl-next'(){U.sel=add(U.sel,1);U.cur=U.sel.slice(0,7);U.pl.pick=U.pl.at=U.pl.ex=null;if(!U.f.ev.id)U.f.ev.d=U.sel;render()},
   'td-toggle'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;t.done=t.done?'':today();save();render()},
   'td-today'(el){const t=S.td.find(x=>x.id===el.dataset.id);if(!t)return;commit('오늘 할 일로 옮겼습니다',()=>{t.due=today()})},
   'td-edit'(el){U.tdEdit=el.dataset.id;U.tdDue=null;render({focus:'#te-n'})},
@@ -1684,6 +1770,7 @@ const A={
 };
 const F={
   'pl-go'(){plGo()},
+  'pl-type'(){plType()},
   quick(){
     const q=$('#q'),s=q.value.trim();
     if(!s){toast('적을 내용을 넣어 주세요');q.focus();return}
@@ -1826,6 +1913,7 @@ document.addEventListener('input',ev=>{
   else if(t.id==='q')$('#hint').hidden=!!t.value;
   else if(t.id==='td-add')U.ta.n=t.value;
   else if(t.id==='pl-new'){U.pl.nw=t.value;plCount()}
+  else if(t.id==='pl-type')U.pl.ty=t.value;
   else if(t.id==='ev-n')$('#ev-err').hidden=true;
   else if(t.id==='rt-n')$('#rt-err').hidden=true;
   else if(t.id==='fold-n'||t.id==='fold-rn'){}
